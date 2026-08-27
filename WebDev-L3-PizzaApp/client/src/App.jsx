@@ -12,6 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import DriverRoute from './components/DriverRoute';
 import InstallPWA from './components/InstallPWA';
+import LoadingSpinner from './components/LoadingSpinner';
 
 // Public Pages
 import Login from './pages/auth/Login';
@@ -43,7 +44,7 @@ function AuthRedirect({ children, redirectWhenAuthenticated = false }) {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return null;
+    return <LoadingSpinner />;
   }
 
   if (redirectWhenAuthenticated && user) {
@@ -57,7 +58,7 @@ function RootRedirect() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return null;
+    return <LoadingSpinner />;
   }
 
   return <Navigate replace to={user ? '/dashboard' : '/login'} />;
@@ -67,14 +68,7 @@ function AppContent() {
   const { loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-medium text-slate-400">Loading SliceMasters...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

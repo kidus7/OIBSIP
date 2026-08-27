@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export const AuthContext = createContext();
 
@@ -22,6 +23,10 @@ export const AuthProvider = ({ children }) => {
 
     setLoading(false);
   }, []);
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   const login = (userData, token) => {
     setUser(userData);

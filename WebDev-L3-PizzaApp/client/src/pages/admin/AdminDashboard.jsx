@@ -4,6 +4,7 @@ import AdminLayout from '../../components/AdminLayout';
 import { orderService } from '../../services/orderService';
 import { inventoryService } from '../../services/inventoryService';
 import { userService } from '../../services/userService';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
@@ -68,9 +69,7 @@ export default function AdminDashboard() {
       )}
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-        </div>
+        <LoadingSpinner fullScreen={false} message="Fetching latest data..." />
       ) : (
         <div className="space-y-8">
           {/* Quick Metrics Cards */}

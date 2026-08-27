@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../services/api';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function MyOrders() {
   const [orders, setOrders] = useState([]);
@@ -70,9 +71,7 @@ export default function MyOrders() {
       )}
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-        </div>
+        <LoadingSpinner fullScreen={false} message="Fetching latest data..." />
       ) : orders.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
           <span className="text-5xl">📦</span>

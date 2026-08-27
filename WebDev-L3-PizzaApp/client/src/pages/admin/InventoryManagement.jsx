@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { inventoryService } from '../../services/inventoryService';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function InventoryManagement() {
   const [inventory, setInventory] = useState([]);
@@ -189,9 +190,7 @@ export default function InventoryManagement() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-        </div>
+        <LoadingSpinner fullScreen={false} message="Fetching latest data..." />
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">

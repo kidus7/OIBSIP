@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import API from '../../services/api';
 import { useCart } from '../../hooks/useCart';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function Dashboard() {
   const [pizzas, setPizzas] = useState([]);
@@ -295,15 +296,7 @@ export default function Dashboard() {
 
         {/* Card Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((n) => (
-              <div key={n} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 animate-pulse h-96">
-                <div className="bg-slate-200 h-52 rounded-xl mb-4"></div>
-                <div className="bg-slate-200 h-6 w-3/4 rounded mb-2"></div>
-                <div className="bg-slate-200 h-4 w-1/2 rounded"></div>
-              </div>
-            ))}
-          </div>
+          <LoadingSpinner fullScreen={false} message="Fetching latest data..." />
         ) : filteredPizzas.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8 shadow-xl">
             <span className="text-4xl">🍕</span>

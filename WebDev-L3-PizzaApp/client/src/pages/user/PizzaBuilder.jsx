@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import API from '../../services/api';
 import { useCart } from '../../hooks/useCart';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function PizzaBuilder() {
   const [step, setStep] = useState(1); // 1: Base, 2: Sauce, 3: Cheese, 4: Veggies
@@ -256,11 +257,7 @@ export default function PizzaBuilder() {
           <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-100">
             
             {loading ? (
-              <div className="space-y-4 py-12">
-                {[1, 2, 3].map(n => (
-                  <div key={n} className="h-20 bg-slate-100 rounded-2xl animate-pulse"></div>
-                ))}
-              </div>
+              <LoadingSpinner fullScreen={false} message="Fetching latest data..." />
             ) : (
               <div>
                 

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import API from '../../services/api';
 import MyOrders from './MyOrders';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function OrderTracking() {
   const { orderId } = useParams();
@@ -109,11 +110,7 @@ export default function OrderTracking() {
   const isCancelled = order?.status === 'Cancelled';
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen={false} message="Fetching latest data..." />;
   }
 
   if (!orderId) {
