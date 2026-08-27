@@ -78,7 +78,7 @@ export default function Login() {
             </div>
             <div className="flex items-center space-x-2 text-slate-300 text-xs">
               <Truck className="w-4 h-4 text-orange-400" />
-              <span>Real-Time GPS Tracking</span>
+              <span>Real-Time Tracking</span>
             </div>
           </div>
         </div>
