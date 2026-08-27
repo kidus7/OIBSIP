@@ -1,0 +1,21 @@
+
+# Dependency directories
+node_modules/
+WebDev-L3-PizzaApp/node_modules/
+WebDev-L3-PizzaApp/server/node_modules/
+WebDev-L3-PizzaApp/client/node_modules/
+
+# Production builds
+dist/
+WebDev-L3-PizzaApp/dist/
+WebDev-L3-PizzaApp/client/dist/
+
+# Environment files
+.env
+WebDev-L3-PizzaApp/.env
+WebDev-L3-PizzaApp/server/.env
+WebDev-L3-PizzaApp/client/.env
+
+# Operating System files
+.DS_Store
+*.log
