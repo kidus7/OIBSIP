@@ -1,0 +1,24 @@
+import API from './api';
+
+export const userService = {
+  createDriver: async (driverData) => {
+    const response = await API.post('/users/create-driver', driverData);
+    return response.data;
+  },
+  getDrivers: async () => {
+    const response = await API.get('/users/drivers');
+    return response.data;
+  },
+  updateDriver: async (id, driverData) => {
+    const response = await API.put(`/users/drivers/${id}`, driverData);
+    return response.data;
+  },
+  toggleDriverStatus: async (id) => {
+    const response = await API.patch(`/users/drivers/${id}/status`);
+    return response.data;
+  },
+  deleteDriver: async (id) => {
+    const response = await API.delete(`/users/drivers/${id}`);
+    return response.data;
+  }
+};
