@@ -93,9 +93,9 @@ export default function Login() {
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span>Customer & Driver Secure Gateway</span>
             </div>
-            <Link to="/admin-login" className="text-xs text-red-400 hover:text-red-300 transition-colors font-medium">
+            {/* <Link to="/admin-login" className="text-xs text-red-400 hover:text-red-300 transition-colors font-medium">
               Admin Portal →
-            </Link>
+            </Link> */}
           </div>
 
           <div className="mb-6">
