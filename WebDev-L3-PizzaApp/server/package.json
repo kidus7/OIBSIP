@@ -1,7 +1,7 @@
 {
   "name": "pizza-app-server",
   "version": "1.0.0",
-  "description": "Backend API for OIBSIP MERN Pizza App",
+  "description": "Backend API for SliceMasters MERN Pizza App",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

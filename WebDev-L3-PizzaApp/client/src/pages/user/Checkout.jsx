@@ -61,13 +61,14 @@ export default function Checkout() {
         subtotal: grandTotal
       });
       const data = res.data.data || res.data;
-console.log('Razorpay order creation response:', data);
+      // console.log('Razorpay order creation response:', data);
+      
       const options = {
         key: res.data.key_id || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mockkey',
         amount: data.amount,
         currency: data.currency,
-        name: 'OIBSIP PizzaApp',
-        description: 'Test Transaction',
+        name: 'SliceMasters PizzaApp',
+        description: 'Payment Transaction',
         order_id: data.id,
         handler: async (response) => {
           try {

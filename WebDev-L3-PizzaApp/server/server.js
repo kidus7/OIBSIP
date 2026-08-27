@@ -64,7 +64,7 @@ app.use('/api/v1/users', require('./routes/userRoutes'));
 
 // Root endpoint
 app.get('/', (req, res) => {
-  res.json({ success: true, message: 'Welcome to OIBSIP PizzaApp API' });
+  res.json({ success: true, message: 'Welcome to Slice Masters PizzaApp API' });
 });
 
 // Error handler middleware

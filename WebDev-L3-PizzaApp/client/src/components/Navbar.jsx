@@ -12,7 +12,23 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/driver')) {
+  const hiddenRoutes = [
+    '/',
+    '/admin',
+    '/driver',
+    '/login',
+    '/logout',
+    '/admin-login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+  ];
+
+  const shouldHideNavbar = hiddenRoutes.some((route) =>
+    location.pathname.startsWith(route)
+  );
+
+  if (shouldHideNavbar) {
     return null;
   }
 
@@ -37,7 +53,7 @@ export default function Navbar() {
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-xl bg-linear-to-r from-red-600 via-orange-600 to-amber-600 bg-clip-text text-transparent tracking-tight">
-                  OIBSIP Pizza
+                  SliceMasters
                 </span>
                 <span className="text-[10px] text-slate-400 font-medium tracking-widest uppercase -mt-1">
                   Artisan & Fresh
