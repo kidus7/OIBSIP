@@ -13,7 +13,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const hiddenRoutes = [
-    '/',
+    // '/',
     '/admin',
     '/driver',
     '/login',

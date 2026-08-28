@@ -7,7 +7,7 @@ export default function Footer() {
   const location = useLocation();
   
   const hiddenRoutes = [
-    '/',
+    // '/',
     '/admin',
     '/driver',
     '/login',
