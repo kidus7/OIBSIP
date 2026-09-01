@@ -94,6 +94,66 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const reorder = (items) => {
+    if (!items || !Array.isArray(items)) return;
+    setCart((prevCart) => {
+      let updatedCart = [...prevCart];
+      items.forEach((item) => {
+        const cleanedItem = {
+          ...item,
+          id: item.id || item._id || Math.random().toString(36).substring(2, 9),
+          quantity: item.quantity || 1,
+          base: item.base,
+          size: item.size,
+          crust: item.crust,
+          sauce: item.sauce,
+          cheese: item.cheese,
+          veggies: item.veggies,
+          name: item.name,
+          price: item.price
+        };
+
+        const itemKey = cleanedItem.id || JSON.stringify({
+          base: cleanedItem.base,
+          sauce: cleanedItem.sauce,
+          cheese: cleanedItem.cheese,
+          veggies: cleanedItem.veggies,
+          name: cleanedItem.name,
+          size: cleanedItem.size,
+          crust: cleanedItem.crust
+        });
+
+        const existingIndex = updatedCart.findIndex((cartItem) => {
+          const k = cartItem.id || cartItem._id || JSON.stringify({
+            base: cartItem.base,
+            sauce: cartItem.sauce,
+            cheese: cartItem.cheese,
+            veggies: cartItem.veggies,
+            name: cartItem.name,
+            size: cartItem.size,
+            crust: cartItem.crust
+          });
+          return k === itemKey;
+        });
+
+        const qtyToAdd = cleanedItem.quantity || 1;
+
+        if (existingIndex > -1) {
+          const currentQty = updatedCart[existingIndex].quantity || 1;
+          updatedCart[existingIndex] = {
+            ...updatedCart[existingIndex],
+            quantity: currentQty + qtyToAdd
+          };
+        } else {
+          updatedCart.push(cleanedItem);
+        }
+      });
+      return updatedCart;
+    });
+  };
+
+  const addMultipleToCart = reorder;
+
   const getCartTotal = () => {
     return cart.reduce((total, item) => {
       const price = item.price || item.totalPrice || 0;
@@ -116,6 +176,8 @@ export const CartProvider = ({ children }) => {
         removeFromCart,
         updateQuantity,
         clearCart,
+        reorder,
+        addMultipleToCart,
         getCartTotal,
         getTotalPrice,
         getCartCount

@@ -21,6 +21,10 @@ export const userService = {
     const response = await API.patch(`/users/drivers/${id}/status`);
     return response.data;
   },
+  verifyDriver: async (id) => {
+    const response = await API.patch(`/admin/drivers/${id}/verify`);
+    return response.data;
+  },
   deleteDriver: async (id) => {
     const response = await API.delete(`/users/drivers/${id}`);
     return response.data;

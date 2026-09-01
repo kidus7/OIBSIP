@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import API from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { useCart } from '../../hooks/useCart';
+import toast from 'react-hot-toast';
 
 export default function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { reorder } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchMyOrders();
@@ -23,6 +27,13 @@ export default function MyOrders() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleReorder = (order) => {
+    const items = order.pizzas || order.items || [];
+    reorder(items);
+    toast.success('Order items added to your cart!');
+    navigate('/cart');
   };
 
   const getStatusBadgeStyle = (status) => {
@@ -148,6 +159,12 @@ export default function MyOrders() {
                     <div className="text-xs text-slate-500 mb-1">
                       Payment: <span className={`font-semibold ${order.paymentInfo?.status === 'Paid' ? 'text-emerald-600' : 'text-amber-600'}`}>{order.paymentInfo?.status || 'Pending'}</span>
                     </div>
+                    <button
+                      onClick={() => handleReorder(order)}
+                      className="w-full text-center bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-sm hover:scale-105 flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <span>Order Again 🔄</span>
+                    </button>
                     <Link
                       to={`/order-tracking/${order._id}`}
                       className="w-full text-center px-6 py-3.5 min-h-[48px] bg-linear-to-r from-red-600 to-orange-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition flex items-center justify-center gap-2"

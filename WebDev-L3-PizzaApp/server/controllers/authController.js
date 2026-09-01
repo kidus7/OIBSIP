@@ -19,26 +19,11 @@ exports.register = async (req, res, next) => {
       name,
       email,
       password,
-      role: 'user'
+      role: 'user',
+      isVerified: true
     });
 
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    await Token.create({
-      userId: user._id,
-      token: verificationToken
-    });
-
-    const message = `Please verify your email by clicking the link: http://${req.headers.host}/api/v1/auth/verify/${user._id}/${verificationToken}`;
-    await sendEmail({
-      email: user.email,
-      subject: 'Email Verification - PizzaApp',
-      message
-    });
-
-    res.status(201).json({
-      success: true,
-      data: 'User registered successfully. Please check your email to verify account.'
-    });
+    sendTokenResponse(user, 201, res);
   } catch (error) {
     next(error);
   }

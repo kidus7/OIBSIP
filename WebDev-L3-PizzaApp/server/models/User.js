@@ -44,6 +44,15 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
+    isOnline: {
+      type: Boolean,
+      default: false
+    },
+    status: {
+      type: String,
+      enum: ['active', 'offline'],
+      default: 'offline'
+    },
     isVerified: {
       type: Boolean,
       default: false

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { userService } from '../../services/userService';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import toast from 'react-hot-toast';
 
 export default function DriversManagement() {
   const [drivers, setDrivers] = useState([]);
@@ -64,15 +65,19 @@ export default function DriversManagement() {
         const res = await userService.updateDriver(currentDriverId, formData);
         setDrivers(drivers.map(d => d._id === currentDriverId ? res.data : d));
         setSuccessMessage('Driver profile updated successfully!');
+        toast.success('Driver profile updated successfully!');
       } else {
         const res = await userService.createDriver(formData);
         setDrivers([...drivers, res.data]);
         setSuccessMessage('Driver account created successfully!');
+        toast.success('Driver account created successfully!');
       }
       setShowModal(false);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to save driver profile');
+      const errMsg = err.response?.data?.error || err.message || 'Failed to save driver profile';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 
@@ -82,9 +87,26 @@ export default function DriversManagement() {
       const res = await userService.toggleDriverStatus(id);
       setDrivers(drivers.map(d => d._id === id ? res.data : d));
       setSuccessMessage('Driver status updated!');
+      toast.success('Driver status updated!');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to toggle status');
+      const errMsg = err.response?.data?.error || err.message || 'Failed to toggle status';
+      setError(errMsg);
+      toast.error(errMsg);
+    }
+  };
+
+  const handleVerifyDriver = async (id) => {
+    try {
+      setError('');
+      const res = await userService.verifyDriver(id);
+      setDrivers(drivers.map(d => d._id === id ? (res.data || res) : d));
+      toast.success('Driver verified successfully! 🛡️');
+      fetchDrivers();
+    } catch (err) {
+      const errMsg = err.response?.data?.error || err.message || 'Failed to verify driver';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 
@@ -95,9 +117,12 @@ export default function DriversManagement() {
       await userService.deleteDriver(id);
       setDrivers(drivers.filter(d => d._id !== id));
       setSuccessMessage('Driver deleted successfully!');
+      toast.success('Driver deleted successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to delete driver');
+      const errMsg = err.response?.data?.error || err.message || 'Failed to delete driver';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 
@@ -159,6 +184,7 @@ export default function DriversManagement() {
                 ) : (
                   drivers.map((driver, index) => {
                     const isActive = driver.isActive !== false;
+                    const isVerified = driver.isVerified === true;
                     return (
                       <tr key={driver._id} className="hover:bg-slate-50/70 transition-colors">
                         <td className="p-4 text-slate-500 font-medium">{index + 1}</td>
@@ -172,13 +198,26 @@ export default function DriversManagement() {
                         </td>
                         <td className="p-4">
                           <span className={`text-xs px-2.5 py-1 rounded-full font-semibold uppercase ${
-                            isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                            isVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                           }`}>
-                            {isActive ? 'Active' : 'Inactive'}
+                            {isVerified ? 'Verified' : 'Pending Verification'}
                           </span>
                         </td>
                         <td className="p-4 text-right">
                           <div className="flex items-center justify-end space-x-2 whitespace-nowrap">
+                            {!isVerified ? (
+                              <button
+                                onClick={() => handleVerifyDriver(driver._id)}
+                                className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-sm"
+                              >
+                                Verify Driver 🛡️
+                              </button>
+                            ) : (
+                              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1.5 rounded-xl text-xs font-bold inline-flex items-center space-x-1">
+                                <span>Verified</span>
+                                <span>✓</span>
+                              </span>
+                            )}
                             <button
                               onClick={() => handleOpenEditModal(driver)}
                               className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 text-xs font-semibold rounded-lg border border-blue-200 transition-colors cursor-pointer"

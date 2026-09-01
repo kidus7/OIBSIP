@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import API from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import NotificationBell from '../../components/NotificationBell';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function DriverDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +18,16 @@ export default function DriverDashboard() {
   const [completingOrderId, setCompletingOrderId] = useState(null);
   const [inputCode, setInputCode] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(user?.isOnline ?? (user?.status === 'active') ?? true);
   const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    if (user?.isOnline !== undefined) {
+      setIsOnline(user.isOnline);
+    } else if (user?.status !== undefined) {
+      setIsOnline(user.status === 'active');
+    }
+  }, [user]);
 
   useEffect(() => {
     fetchDriverOrders();
@@ -73,18 +83,45 @@ export default function DriverDashboard() {
     }
   };
 
+  const handleToggleStatus = async (newStatus) => {
+    try {
+      setError('');
+      const res = await API.patch('/driver/status', { isOnline: newStatus });
+      const updated = res.data.data || res.data;
+      setIsOnline(updated.isOnline);
+      if (updateUser) {
+        updateUser({ ...user, isOnline: updated.isOnline, status: updated.status, isActive: updated.isActive });
+      }
+      if (updated.isOnline) {
+        toast.success('🟢 Online & Ready for Orders');
+        fetchDriverOrders();
+      } else {
+        toast.success('🔴 Offline / On Break');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message || 'Failed to update availability status');
+    }
+  };
+
   const handleClaimOrder = async (orderId) => {
+    if (!isOnline) {
+      toast.error('You must be Online to claim delivery orders.');
+      return;
+    }
     try {
       setError('');
       setSuccessMsg('');
       const res = await API.put(`/orders/${orderId}/claim`);
       const updated = res.data.data || res.data;
       setOrders(orders.map(o => o._id === orderId ? updated : o));
+      toast.success(`Successfully accepted Order #${orderId.slice(-6)}! Out for delivery 🛵`);
       setSuccessMsg(`Successfully accepted Order #${orderId.slice(-6)}! Out for delivery 🛵`);
       setActiveTab('active');
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to claim order');
+      const errMsg = err.response?.data?.error || err.message || 'Failed to claim order';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 
@@ -95,13 +132,16 @@ export default function DriverDashboard() {
       const res = await API.put(`/driver/orders/${orderId}/verify`, { deliveryCode: inputCode });
       const updated = res.data.data || res.data;
       setOrders(orders.map(o => o._id === orderId ? updated : o));
+      toast.success(`Order #${orderId.slice(-6)} marked as Delivered! 🎉`);
       setSuccessMsg(`Order #${orderId.slice(-6)} marked as Delivered! 🎉`);
       setCompletingOrderId(null);
       setInputCode('');
       setTimeout(() => setSuccessMsg(''), 4000);
       fetchDriverOrders(true);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to complete order with delivery code');
+      const errMsg = err.response?.data?.error || err.message || 'Failed to complete order with delivery code';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 
@@ -129,8 +169,8 @@ export default function DriverDashboard() {
   return (
     <div className="max-w-md md:max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-8 space-y-6 min-h-screen overflow-x-hidden">
       {/* Top Header Bar */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center justify-between relative z-20">
-        <div className="flex items-center gap-3">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex flex-col sm:flex-row items-center justify-between gap-3 relative z-20">
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
           <div className="flex items-center gap-2">
             <span className="text-xl">🍕</span>
             <span className="font-extrabold text-base sm:text-lg bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
@@ -142,58 +182,74 @@ export default function DriverDashboard() {
           </span>
         </div>
 
-        <div className="flex items-center gap-3 relative" ref={dropdownRef}>
-          <div className="bg-slate-50 p-1.5 rounded-xl">
-            <NotificationBell />
-          </div>
+        {/* Status Toggle Pill in Header Bar */}
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
           <button
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-red-600 text-white font-extrabold text-xs flex items-center justify-center shadow-md hover:scale-105 transition-all cursor-pointer"
-            title={user?.name || 'Driver Avatar'}
+            onClick={() => handleToggleStatus(!isOnline)}
+            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-full border text-xs font-bold transition cursor-pointer shadow-sm ${
+              isOnline
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+            }`}
+            title="Click to toggle availability status"
           >
-            {getInitials(user?.name)}
+            <span>{isOnline ? '🟢 Online & Ready for Orders' : '🔴 Offline / On Break'}</span>
+            <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
           </button>
 
-          {dropdownOpen && (
-            <div className="absolute right-0 top-12 w-60 bg-white rounded-2xl border border-slate-100 shadow-xl p-3 z-50 animate-fadeIn">
-              <div className="px-2 py-1.5 border-b border-slate-100 pb-2.5">
-                <p className="text-sm font-bold text-slate-800 truncate">{user?.name || 'Driver'}</p>
-                <p className="text-xs text-slate-400 truncate">{user?.email || ''}</p>
-                <span className="bg-emerald-50 text-emerald-600 font-bold text-[10px] px-2 py-0.5 rounded-full inline-block mt-1 uppercase tracking-wider">
-                  DRIVER
-                </span>
-              </div>
-              <div className="pt-2 space-y-1">
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    navigate('/profile');
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors text-left cursor-pointer"
-                >
-                  <span>👤</span> Profile & Vehicle Settings
-                </button>
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    setActiveTab('active');
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors text-left cursor-pointer"
-                >
-                  <span>🚗</span> Active Deliveries
-                </button>
-                <button
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    logout();
-                  }}
-                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer mt-1 border-t border-slate-100 pt-2.5"
-                >
-                  <span>🚪</span> Sign Out
-                </button>
-              </div>
+          <div className="flex items-center gap-3 relative" ref={dropdownRef}>
+            <div className="bg-slate-50 p-1.5 rounded-xl hidden sm:block">
+              <NotificationBell />
             </div>
-          )}
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-red-600 text-white font-extrabold text-xs flex items-center justify-center shadow-md hover:scale-105 transition-all cursor-pointer"
+              title={user?.name || 'Driver Avatar'}
+            >
+              {getInitials(user?.name)}
+            </button>
+
+            {dropdownOpen && (
+              <div className="absolute right-0 top-12 w-60 bg-white rounded-2xl border border-slate-100 shadow-xl p-3 z-50 animate-fadeIn">
+                <div className="px-2 py-1.5 border-b border-slate-100 pb-2.5">
+                  <p className="text-sm font-bold text-slate-800 truncate">{user?.name || 'Driver'}</p>
+                  <p className="text-xs text-slate-400 truncate">{user?.email || ''}</p>
+                  <span className="bg-emerald-50 text-emerald-600 font-bold text-[10px] px-2 py-0.5 rounded-full inline-block mt-1 uppercase tracking-wider">
+                    DRIVER
+                  </span>
+                </div>
+                <div className="pt-2 space-y-1">
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      navigate('/profile');
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors text-left cursor-pointer"
+                  >
+                    <span>👤</span> Profile & Vehicle Settings
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      setActiveTab('active');
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors text-left cursor-pointer"
+                  >
+                    <span>🚗</span> Active Deliveries
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      logout();
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer mt-1 border-t border-slate-100 pt-2.5"
+                  >
+                    <span>🚪</span> Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -273,7 +329,21 @@ export default function DriverDashboard() {
         <div className="space-y-4">
           {activeTab === 'available' && (
             <div>
-              {availableOrders.length === 0 ? (
+              {!isOnline ? (
+                <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm space-y-4">
+                  <span className="text-4xl">🔴</span>
+                  <h3 className="text-base font-bold text-slate-700">You Are Currently Offline</h3>
+                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                    You are currently offline. Toggle your status to Online to accept new delivery orders.
+                  </p>
+                  <button
+                    onClick={() => handleToggleStatus(true)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-wider transition shadow-md cursor-pointer inline-flex items-center gap-2"
+                  >
+                    <span>🟢 Toggle to Online</span>
+                  </button>
+                </div>
+              ) : availableOrders.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
                   <span className="text-4xl">🛵</span>
                   <h3 className="text-base font-bold text-slate-700 mt-3">No Available Deliveries</h3>

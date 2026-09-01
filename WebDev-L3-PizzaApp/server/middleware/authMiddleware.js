@@ -23,3 +23,11 @@ exports.protect = async (req, res, next) => {
     return res.status(401).json({ success: false, error: 'Not authorized to access this route' });
   }
 };
+
+exports.driverOnly = (req, res, next) => {
+  if (req.user && req.user.role === 'driver') {
+    next();
+  } else {
+    res.status(403).json({ success: false, error: 'User is not authorized as a driver' });
+  }
+};
