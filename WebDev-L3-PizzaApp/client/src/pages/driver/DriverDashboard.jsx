@@ -1,19 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
 import API from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import NotificationBell from '../../components/NotificationBell';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function DriverDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [activeTab, setActiveTab] = useState('available'); // 'available' or 'active' or 'history'
+  const [activeTab, setActiveTab] = useState('available'); // 'available', 'active', or 'completed'
   const [completingOrderId, setCompletingOrderId] = useState(null);
   const [inputCode, setInputCode] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     fetchDriverOrders();
@@ -34,6 +38,25 @@ export default function DriverDashboard() {
       socket.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const getInitials = (name) => {
+    if (!name) return 'D';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
 
   const fetchDriverOrders = async (isPoll = false) => {
     try {
@@ -69,26 +92,113 @@ export default function DriverDashboard() {
     try {
       setError('');
       setSuccessMsg('');
-      const res = await API.put(`/orders/${orderId}/complete`, { deliveryCode: inputCode });
+      const res = await API.put(`/driver/orders/${orderId}/verify`, { deliveryCode: inputCode });
       const updated = res.data.data || res.data;
       setOrders(orders.map(o => o._id === orderId ? updated : o));
       setSuccessMsg(`Order #${orderId.slice(-6)} marked as Delivered! 🎉`);
       setCompletingOrderId(null);
       setInputCode('');
       setTimeout(() => setSuccessMsg(''), 4000);
+      fetchDriverOrders(true);
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed to complete order with delivery code');
     }
   };
 
-  const availableOrders = orders.filter(o => o.status === 'Sent to Delivery' && (!o.driver || o.driver._id === user?._id || o.driver === user?._id));
-  const activeDeliveries = orders.filter(o => o.driver && (o.driver._id === user?._id || o.driver === user?._id) && o.status === 'Out for Delivery');
-  const completedDeliveries = orders.filter(o => o.driver && (o.driver._id === user?._id || o.driver === user?._id) && o.status === 'Delivered');
+  const isMyOrder = (order) => {
+    const dId = order.driverId?._id?.toString() || order.driverId?.toString() || order.driver?._id?.toString() || order.driver?.toString();
+    const uId = user?._id?.toString() || user?.id?.toString();
+    return dId && uId && dId === uId;
+  };
+
+  const isUnassigned = (order) => {
+    const dId = order.driverId?._id?.toString() || order.driverId?.toString() || order.driver?._id?.toString() || order.driver?.toString();
+    return !dId;
+  };
+
+  const availableOrders = orders.filter(o => 
+    (o.status === 'Out for Delivery' || o.status === 'Sent to Delivery') && isUnassigned(o)
+  );
+  const activeDeliveries = orders.filter(o => 
+    isMyOrder(o) && ['Out for Delivery', 'In Transit', 'On The Way', 'Sent to Delivery'].includes(o.status)
+  );
+  const completedDeliveries = orders.filter(o => 
+    isMyOrder(o) && o.status === 'Delivered'
+  );
 
   return (
     <div className="max-w-md md:max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-8 space-y-6 min-h-screen overflow-x-hidden">
+      {/* Top Header Bar */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center justify-between relative z-20">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🍕</span>
+            <span className="font-extrabold text-base sm:text-lg bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+              SliceMasters
+            </span>
+          </div>
+          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-[10px] sm:text-xs px-2.5 py-1 rounded-full uppercase tracking-wider hidden sm:inline-block">
+            DRIVER PORTAL
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3 relative" ref={dropdownRef}>
+          <div className="bg-slate-50 p-1.5 rounded-xl">
+            <NotificationBell />
+          </div>
+          <button
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-red-600 text-white font-extrabold text-xs flex items-center justify-center shadow-md hover:scale-105 transition-all cursor-pointer"
+            title={user?.name || 'Driver Avatar'}
+          >
+            {getInitials(user?.name)}
+          </button>
+
+          {dropdownOpen && (
+            <div className="absolute right-0 top-12 w-60 bg-white rounded-2xl border border-slate-100 shadow-xl p-3 z-50 animate-fadeIn">
+              <div className="px-2 py-1.5 border-b border-slate-100 pb-2.5">
+                <p className="text-sm font-bold text-slate-800 truncate">{user?.name || 'Driver'}</p>
+                <p className="text-xs text-slate-400 truncate">{user?.email || ''}</p>
+                <span className="bg-emerald-50 text-emerald-600 font-bold text-[10px] px-2 py-0.5 rounded-full inline-block mt-1 uppercase tracking-wider">
+                  DRIVER
+                </span>
+              </div>
+              <div className="pt-2 space-y-1">
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    navigate('/profile');
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors text-left cursor-pointer"
+                >
+                  <span>👤</span> Profile & Vehicle Settings
+                </button>
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    setActiveTab('active');
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors text-left cursor-pointer"
+                >
+                  <span>🚗</span> Active Deliveries
+                </button>
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer mt-1 border-t border-slate-100 pt-2.5"
+                >
+                  <span>🚪</span> Sign Out
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Header Banner */}
-      <div className="bg-linear-to-r from-orange-600 to-red-600 text-white rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sticky top-16 z-20 backdrop-blur-md">
+      <div className="bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
         <div>
           <div className="flex items-center space-x-2">
             <span className="bg-white/25 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
@@ -100,12 +210,9 @@ export default function DriverDashboard() {
           <p className="text-orange-100 text-xs mt-1">Accept incoming orders ready for delivery and update delivery statuses in real time.</p>
         </div>
         <div className="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end">
-          <div className="bg-white/10 p-2 rounded-xl backdrop-blur-sm">
-            <NotificationBell />
-          </div>
           <button
             onClick={() => fetchDriverOrders()}
-            className="bg-white text-orange-600 font-bold px-4 py-3 min-h-[48px] rounded-xl text-xs hover:bg-orange-50 transition shadow-sm cursor-pointer flex items-center justify-center"
+            className="bg-white text-orange-600 font-bold px-4 py-3 min-h-[48px] rounded-xl text-xs hover:bg-orange-50 transition shadow-sm cursor-pointer flex items-center justify-center w-full md:w-auto"
           >
             🔄 Refresh Orders
           </button>
@@ -127,10 +234,10 @@ export default function DriverDashboard() {
       )}
 
       {/* Mobile-First Navigation Tabs */}
-      <div className="flex bg-white rounded-2xl p-1.5 shadow-sm border border-slate-200">
+      <div className="flex flex-wrap sm:flex-nowrap gap-2 bg-white rounded-2xl p-1.5 shadow-sm border border-slate-200 overflow-x-auto">
         <button
           onClick={() => setActiveTab('available')}
-          className={`flex-1 py-3 min-h-[48px] rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 ${
+          className={`flex-1 min-w-[120px] py-3 px-4 min-h-[48px] rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 ${
             activeTab === 'available'
               ? 'bg-orange-600 text-white shadow-md'
               : 'text-slate-600 hover:bg-slate-50'
@@ -140,7 +247,7 @@ export default function DriverDashboard() {
         </button>
         <button
           onClick={() => setActiveTab('active')}
-          className={`flex-1 py-3 min-h-[48px] rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 ${
+          className={`flex-1 min-w-[120px] py-3 px-4 min-h-[48px] rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 ${
             activeTab === 'active'
               ? 'bg-orange-600 text-white shadow-md'
               : 'text-slate-600 hover:bg-slate-50'
@@ -149,14 +256,14 @@ export default function DriverDashboard() {
           <span>🛵 Active ({activeDeliveries.length})</span>
         </button>
         <button
-          onClick={() => setActiveTab('history')}
-          className={`flex-1 py-3 min-h-[48px] rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 ${
-            activeTab === 'history'
+          onClick={() => setActiveTab('completed')}
+          className={`flex-1 min-w-[120px] py-3 px-4 min-h-[48px] rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 ${
+            activeTab === 'completed'
               ? 'bg-orange-600 text-white shadow-md'
               : 'text-slate-600 hover:bg-slate-50'
           }`}
         >
-          <span>✨ History ({completedDeliveries.length})</span>
+          <span>✨ Completed ({completedDeliveries.length})</span>
         </button>
       </div>
 
@@ -274,7 +381,7 @@ export default function DriverDashboard() {
                               onClick={() => handleCompleteOrderWithCode(order._id)}
                               className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 min-h-[48px] rounded-xl text-xs sm:text-sm uppercase tracking-wider transition shadow cursor-pointer flex items-center justify-center"
                             >
-                              Confirm Delivery ✅
+                              Verify & Deliver 🚀
                             </button>
                             <button
                               onClick={() => { setCompletingOrderId(null); setInputCode(''); }}
@@ -289,8 +396,8 @@ export default function DriverDashboard() {
                           onClick={() => { setCompletingOrderId(order._id); setInputCode(''); setError(''); }}
                           className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 min-h-[48px] rounded-xl text-lg uppercase tracking-wider transition shadow-lg shadow-emerald-600/30 flex items-center justify-center space-x-2 cursor-pointer"
                         >
-                          <span>Mark as Delivered</span>
-                          <span>✅</span>
+                          <span>Verify & Deliver</span>
+                          <span>🚀</span>
                         </button>
                       )}
                     </div>
@@ -300,7 +407,7 @@ export default function DriverDashboard() {
             </div>
           )}
 
-          {activeTab === 'history' && (
+          {activeTab === 'completed' && (
             <div>
               {completedDeliveries.length === 0 ? (
                 <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">

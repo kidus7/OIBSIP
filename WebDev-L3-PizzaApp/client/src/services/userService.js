@@ -1,6 +1,10 @@
 import API from './api';
 
 export const userService = {
+  updateProfile: async (profileData) => {
+    const response = await API.put('/users/profile', profileData);
+    return response.data;
+  },
   createDriver: async (driverData) => {
     const response = await API.post('/users/create-driver', driverData);
     return response.data;

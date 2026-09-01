@@ -29,6 +29,8 @@ router.get('/admin/all', protect, admin, getAllOrders);
 router.get('/driver/available', protect, getDriverAvailableOrders);
 router.put('/:id/claim', protect, claimOrder);
 router.put('/:id/complete', protect, completeOrder);
+router.put('/driver/orders/:id/verify', protect, completeOrder);
+router.put('/:id/verify', protect, completeOrder);
 router.get('/:id', protect, getOrderById);
 router.put('/:id/status', protect, admin, updateOrderStatus);
 router.put('/:id/eta', protect, admin, updateOrderETA);

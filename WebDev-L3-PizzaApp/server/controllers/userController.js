@@ -139,3 +139,69 @@ exports.deleteDriver = async (req, res, next) => {
 // @route   POST /api/v1/users/login
 // @access  Public
 exports.loginUser = login;
+
+// @desc    Update user profile
+// @route   PUT /api/v1/users/profile
+// @access  Private
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const { name, email, phone, vehicleDetails, preferences, currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user.id).select('+password');
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    if (email && email !== user.email) {
+      const emailExists = await User.findOne({ email });
+      if (emailExists) {
+        return res.status(400).json({ success: false, error: 'Email already in use' });
+      }
+      user.email = email;
+    }
+
+    if (name) user.name = name;
+    if (phone !== undefined) user.phone = phone;
+    if (vehicleDetails !== undefined) {
+      user.vehicleDetails = vehicleDetails;
+    }
+    if (preferences !== undefined) {
+      user.preferences = { ...user.preferences, ...preferences };
+    }
+
+    if (newPassword && newPassword.trim() !== '') {
+      if (!currentPassword) {
+        return res.status(400).json({ success: false, error: 'Please provide current password to update password' });
+      }
+      const isMatch = await user.matchPassword(currentPassword);
+      if (!isMatch) {
+        return res.status(401).json({ success: false, error: 'Current password is incorrect' });
+      }
+      if (newPassword.length < 6) {
+        return res.status(400).json({ success: false, error: 'New password must be at least 6 characters' });
+      }
+      user.password = newPassword;
+    }
+
+    await user.save();
+
+    const updatedUser = await User.findById(user._id);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        role: updatedUser.role,
+        vehicleDetails: updatedUser.vehicleDetails,
+        preferences: updatedUser.preferences,
+        isActive: updatedUser.isActive,
+        isVerified: updatedUser.isVerified
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};

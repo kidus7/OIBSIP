@@ -5,7 +5,8 @@ const {
   updateDriver,
   toggleDriverStatus,
   deleteDriver,
-  loginUser
+  loginUser,
+  updateProfile
 } = require('../controllers/userController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -13,6 +14,7 @@ const { admin } = require('../middleware/adminMiddleware');
 
 const router = express.Router();
 
+router.put('/profile', protect, updateProfile);
 router.post('/login', loginUser);
 router.post('/create-driver', protect, admin, createDriver);
 router.get('/drivers', protect, admin, getDrivers);

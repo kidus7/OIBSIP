@@ -19,6 +19,15 @@ export default function Dashboard() {
     }
   }, [urlSearch]);
 
+  useEffect(() => {
+    if (window.location.hash === '#menu') {
+      const timer = setTimeout(() => {
+        document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
   const { addToCart } = useCart();
   const navigate = useNavigate();
 
@@ -85,7 +94,6 @@ export default function Dashboard() {
       try {
         const response = await API.get('/inventory');
         const items = response.data?.data || response.data || [];
-        // Filter for pre-made pizzas
         const preMade = items.filter(item => item.category === 'pre-made');
         if (preMade.length > 0) {
           const formatted = preMade.map(item => ({
@@ -149,7 +157,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-orange-50/40 via-white to-orange-50/20 pt-20 pb-16 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pt-2 pb-20 overflow-x-hidden">
       
       {/* Toast Notification */}
       {notification && (
@@ -160,93 +168,125 @@ export default function Dashboard() {
       )}
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <section className="max-w-7xl mx-auto px-6 sm:px-10 md:px-14 lg:px-16 xl:px-8 py-6 lg:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 bg-orange-100/80 border border-orange-200/60 px-4 py-1.5 rounded-full shadow-sm">
-              <span className="flex h-2 w-2 rounded-full bg-red-600 animate-ping"></span>
-              <span className="text-xs font-bold text-orange-800 tracking-wide uppercase">
-                Fastest Pizza Delivery 🍕
-              </span>
+          {/* Left Column (CTA & Typography) */}
+          <div className="space-y-6 text-center lg:text-left">
+            
+            {/* Pill Badge */}
+            <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 font-bold text-xs px-3.5 py-1.5 rounded-full shadow-sm">
+              <span>Fastest Delivery ⚡</span>
             </div>
 
+            {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
               Fastest Delivery & <br className="hidden sm:inline" />
-              <span className="bg-linear-to-r from-red-600 via-orange-600 to-amber-500 bg-clip-text text-transparent">
-                Ready-Made Pizzas
+              <span className="bg-linear-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+                Artisan Pizzas Delivered Hot
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
-              Experience artisan ready-made pizzas crafted with premium farm-fresh ingredients, wood-fired perfection, and delivered piping hot to your doorstep in 30 minutes or less.
+            {/* Secondary Description */}
+            <p className="text-base sm:text-lg text-slate-600 max-w-xl mx-auto lg:mx-0 font-normal leading-relaxed">
+              Experience wood-fired perfection crafted with 100% farm-fresh ingredients, artisanal cheeses, and delivered straight to your doorstep in 30 minutes or less.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+            {/* Dual CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
               <Link
                 to="/custom-builder"
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-sm bg-linear-to-r from-red-600 via-orange-600 to-amber-600 text-white shadow-xl shadow-orange-600/30 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all text-center flex items-center justify-center gap-2"
+                className="w-full sm:w-auto bg-slate-900 text-white hover:bg-slate-800 rounded-2xl px-8 py-3.5 font-bold shadow-lg shadow-slate-900/20 transition-all hover:scale-105 text-center flex items-center justify-center gap-2"
               >
-                <span>Build Custom Pizza 🍕</span>
+                <span>Order Now 🍕</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </Link>
+
+              <a
+                href="#menu"
+                className="w-full sm:w-auto bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 rounded-2xl px-6 py-3.5 font-bold shadow-sm transition-all text-center flex items-center justify-center gap-2"
+              >
+                <span>How it Works ▶</span>
+              </a>
             </div>
 
-            <div className="pt-6 grid grid-cols-3 gap-4 border-t border-slate-200/80 max-w-lg mx-auto lg:mx-0">
-              <div className="flex flex-col">
-                <span className="text-2xl font-extrabold text-slate-900">30 Min</span>
-                <span className="text-xs text-slate-500 font-medium">Fast Delivery</span>
+            {/* Social Proof / Bottom Quote Banner */}
+            <div className="pt-4 max-w-md mx-auto lg:mx-0 bg-white border border-slate-100 rounded-2xl p-4 shadow-xl shadow-slate-200/50 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-linear-to-tr from-orange-500 to-red-600 flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0">
+                🍕
               </div>
-              <div className="flex flex-col border-x border-slate-200 px-4">
-                <span className="text-2xl font-extrabold text-slate-900">4.9 ⭐</span>
-                <span className="text-xs text-slate-500 font-medium">Customer Rating</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-2xl font-extrabold text-slate-900">100%</span>
-                <span className="text-xs text-slate-500 font-medium">Fresh Ingredients</span>
+              <div>
+                <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
+                  <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                  <span className="text-slate-600 ml-1">4.9 / 5.0 (2,400+ reviews)</span>
+                </div>
+                <p className="text-xs text-slate-600 italic mt-0.5 font-medium">
+                  "When you're hungry, we're just a click away!"
+                </p>
               </div>
             </div>
+
           </div>
 
-          <div className="lg:col-span-5 relative">
-            <div className="absolute -inset-4 bg-linear-to-r from-orange-500/20 to-red-500/20 rounded-3xl blur-2xl -z-10"></div>
-            <div className="relative space-y-6">
-              <div className="bg-white rounded-2xl p-4 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-orange-100 relative group">
-                <div className="absolute top-6 right-6 z-10 bg-linear-to-r from-red-600 to-orange-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+          {/* Right Column (Hero Visual) */}
+          <div className="relative flex items-center justify-center">
+            {/* Large circular backdrop layer */}
+            <div className="w-[380px] h-[380px] sm:w-[420px] sm:h-[420px] rounded-full bg-linear-to-tr from-orange-100/60 to-amber-50/60 flex items-center justify-center relative shadow-inner">
+              
+              {/* Bestseller Pizza Card in Center */}
+              <div className="w-[300px] sm:w-[340px] bg-white rounded-2xl p-4 shadow-xl shadow-orange-500/10 border border-slate-100 relative group transition-all duration-300 hover:scale-105">
+                <div className="absolute top-6 right-6 z-10 bg-linear-to-r from-orange-500 to-red-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
                   <span>🔥</span>
                   <span>Bestseller</span>
                 </div>
-                <div className="h-64 rounded-2xl overflow-hidden relative">
+                <div className="h-48 rounded-2xl overflow-hidden relative bg-slate-100">
                   <img
-                    src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80"
-                    alt="Artisan Truffle Pizza"
+                    src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80"
+                    alt="Truffle Mushroom Artisan"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent flex items-end p-6">
-                    <div>
-                      <span className="bg-orange-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                        Chef's Special
-                      </span>
-                      <h3 className="text-xl font-bold text-white mt-1">Truffle Mushroom Artisan</h3>
-                      <p className="text-xs text-slate-200 mt-0.5">$16.50 • Wood-Fired Crust</p>
-                    </div>
+                </div>
+                <div className="mt-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-extrabold text-slate-900 text-sm">Truffle Mushroom Artisan</h3>
+                    <p className="text-[11px] text-slate-500">Wood-Fired Crust • Fresh Thyme</p>
                   </div>
+                  <span className="font-black text-orange-600 text-base">$16.50</span>
                 </div>
               </div>
+
+              {/* Floating Badge 1: 30-min delivery */}
+              <div className="absolute -left-4 sm:left-2 top-10 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg border border-slate-100 flex items-center gap-2 animate-bounce">
+                <span className="text-lg">🛵</span>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Delivery Time</p>
+                  <p className="text-xs font-black text-slate-900">30 Min Guaranteed</p>
+                </div>
+              </div>
+
+              {/* Floating Badge 2: Rating */}
+              <div className="absolute -right-4 sm:right-2 bottom-12 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg border border-slate-100 flex items-center gap-2">
+                <span className="text-lg">⭐</span>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Top Rated</p>
+                  <p className="text-xs font-black text-slate-900">4.9/5 Foodie Choice</p>
+                </div>
+              </div>
+
             </div>
           </div>
 
         </div>
       </section>
 
-      {/* Menu Section with Filter Tabs */}
-      <section id="menu" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      {/* Menu & Catalog Section */}
+      <section id="menu" className="max-w-7xl mx-auto px-6 sm:px-10 md:px-14 lg:px-16 xl:px-8 py-16">
         
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
           <div>
-            <span className="text-xs font-bold text-orange-600 uppercase tracking-widest bg-orange-100 px-3 py-1 rounded-full">
+            <span className="text-xs font-bold text-orange-600 uppercase tracking-widest bg-orange-100 px-3.5 py-1.5 rounded-full">
               Our Menu
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3 tracking-tight">
@@ -258,29 +298,29 @@ export default function Dashboard() {
           </div>
 
           {/* Search Input & Filter Tabs */}
-          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center mt-6 md:mt-0">
+          <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search pizzas by name or category..."
+                placeholder="Search pizzas..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full md:w-64 pl-9 pr-4 py-3.5 min-h-[48px] bg-white border border-slate-200 rounded-2xl text-base sm:text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-sm"
+                className="w-full md:w-60 pl-9 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-sm"
               />
-              <svg className="absolute left-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg className="absolute left-3 top-3.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
 
-            {/* Filter Tab Pills: [ All | Veg | Non-Veg | Custom Builder ] */}
+            {/* Filter Tab Pills */}
             <div className="flex flex-wrap gap-2">
               {['All', 'Veg', 'Non-Veg', 'Custom Builder'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => handleTabClick(tab)}
-                  className={`px-5 py-3 min-h-[48px] rounded-2xl text-xs font-bold transition-all flex items-center justify-center ${
+                  className={`px-5 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center ${
                     activeTab === tab && tab !== 'Custom Builder'
-                      ? 'bg-linear-to-r from-red-600 to-orange-500 text-white shadow-xl shadow-orange-500/30 scale-105'
+                      ? 'bg-linear-to-r from-orange-500 to-red-600 text-white shadow-lg shadow-orange-500/20 scale-105'
                       : 'bg-white text-slate-700 border border-slate-200 hover:border-orange-500 hover:text-orange-600 shadow-sm'
                   }`}
                 >
@@ -296,7 +336,7 @@ export default function Dashboard() {
 
         {/* Card Grid */}
         {loading ? (
-          <LoadingSpinner fullScreen={false} message="Fetching latest data..." />
+          <LoadingSpinner fullScreen={false} message="Fetching latest menu..." />
         ) : filteredPizzas.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 p-8 shadow-xl">
             <span className="text-4xl">🍕</span>
@@ -316,9 +356,9 @@ export default function Dashboard() {
               return (
                 <div
                   key={pizza._id || idx}
-                  className="bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 flex flex-col group relative"
+                  className="bg-white rounded-2xl overflow-hidden shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 flex flex-col group relative"
                 >
-                  {/* Floating Rating/Badge Overlay */}
+                  {/* Veg / Bestseller Badge */}
                   <div className="absolute top-4 left-4 z-10 flex gap-2">
                     <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full shadow-lg backdrop-blur-md ${
                       veg ? 'bg-emerald-500/90 text-white' : 'bg-red-600/90 text-white'
@@ -336,14 +376,13 @@ export default function Dashboard() {
                     </span>
                   </div>
 
-                  {/* High-res Pizza Image */}
+                  {/* Pizza Image */}
                   <div className="relative h-56 overflow-hidden bg-slate-100">
                     <img
                       src={pizza.image || pizza.imageURL}
                       alt={pizza.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent"></div>
                   </div>
 
                   {/* Card Content */}
@@ -362,24 +401,24 @@ export default function Dashboard() {
                       </p>
                     </div>
 
-                    {/* Actions: Add to Cart & Modify Ingredients */}
+                    {/* Actions */}
                     <div className="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between gap-3">
                       <button
                         onClick={() => handleAddToCart(pizza)}
                         disabled={pizza.stock === 0}
-                        className={`flex-1 py-3.5 min-h-[48px] rounded-xl text-xs font-bold text-white shadow-md transition-all flex items-center justify-center gap-1.5 ${
+                        className={`flex-1 py-3.5 rounded-2xl text-xs font-bold text-white shadow-md transition-all flex items-center justify-center gap-1.5 ${
                           pizza.stock === 0
                             ? 'bg-slate-300 cursor-not-allowed shadow-none'
-                            : 'bg-linear-to-r from-red-600 to-orange-500 hover:shadow-xl hover:scale-105 active:scale-95'
+                            : 'bg-linear-to-r from-orange-500 to-red-600 hover:shadow-xl hover:scale-105 active:scale-95'
                         }`}
                       >
                         <span>Add to Cart</span>
                       </button>
                       <button
                         onClick={() => navigate('/custom-builder', { state: { pizza } })}
-                        className="flex-1 text-center py-3.5 min-h-[48px] rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors border border-slate-200 flex items-center justify-center"
+                        className="flex-1 text-center py-3.5 rounded-2xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors border border-slate-200 flex items-center justify-center"
                       >
-                        Modify Ingredients 🛠️
+                        Modify 🛠️
                       </button>
                     </div>
 
@@ -393,7 +432,7 @@ export default function Dashboard() {
       </section>
 
       {/* Promotional Banner Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section className="max-w-7xl mx-auto px-6 sm:px-10 md:px-14 lg:px-16 xl:px-8 py-12">
         <div className="bg-linear-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-8 sm:p-12 relative overflow-hidden shadow-2xl">
           <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 hidden lg:block pointer-events-none">
             <img
@@ -415,7 +454,7 @@ export default function Dashboard() {
             <div className="pt-2">
               <Link
                 to="/custom-builder"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-linear-to-r from-red-600 to-orange-500 text-white font-bold text-sm rounded-2xl shadow-xl shadow-orange-500/30 hover:scale-105 transition-all"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-linear-to-r from-orange-500 to-red-600 text-white font-bold text-sm rounded-2xl shadow-xl shadow-orange-500/30 hover:scale-105 transition-all"
               >
                 <span>Start Building Now</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

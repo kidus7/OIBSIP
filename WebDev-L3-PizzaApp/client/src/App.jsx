@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -29,6 +29,7 @@ import CartSummary from './pages/user/CartSummary';
 import Checkout from './pages/user/Checkout';
 import MyOrders from './pages/user/MyOrders';
 import OrderTracking from './pages/user/OrderTracking';
+import Profile from './pages/Profile';
 
 // Admin Protected Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -40,6 +41,14 @@ import DriversManagement from './pages/admin/DriversManagement';
 import DriverDashboard from './pages/driver/DriverDashboard';
 import { useAuth } from './hooks/useAuth';
 
+// Helper to resolve landing page based on user role
+function getRoleBasedPath(user) {
+  if (!user) return '/login';
+  if (user.role === 'admin') return '/admin/dashboard';
+  if (user.role === 'driver') return '/driver/dashboard';
+  return '/dashboard';
+}
+
 function AuthRedirect({ children, redirectWhenAuthenticated = false }) {
   const { user, loading } = useAuth();
 
@@ -48,7 +57,7 @@ function AuthRedirect({ children, redirectWhenAuthenticated = false }) {
   }
 
   if (redirectWhenAuthenticated && user) {
-    return <Navigate replace to="/dashboard" />;
+    return <Navigate replace to={getRoleBasedPath(user)} />;
   }
 
   return children;
@@ -61,7 +70,65 @@ function RootRedirect() {
     return <LoadingSpinner />;
   }
 
-  return <Navigate replace to={user ? '/dashboard' : '/login'} />;
+  return <Navigate replace to={getRoleBasedPath(user)} />;
+}
+
+function AppLayout() {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  // Determine if current route is an Admin or Driver view
+  const isAdminOrDriverRoute = 
+    location.pathname.startsWith('/admin') || 
+    location.pathname.startsWith('/driver') ||
+    user?.role === 'admin' ||
+    user?.role === 'driver';
+
+  return (
+    <div className="app-container overflow-x-hidden" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+      
+      {!isAdminOrDriverRoute && <Navbar />}
+
+      <main style={{ flex: 1 }} className={!isAdminOrDriverRoute ? "pt-20" : ""}>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<AuthRedirect redirectWhenAuthenticated><Login /></AuthRedirect>} />
+          <Route path="/register" element={<AuthRedirect redirectWhenAuthenticated><Register /></AuthRedirect>} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:id/:token" element={<ResetPassword />} />
+          <Route path="/admin-login" element={<AuthRedirect redirectWhenAuthenticated><AdminLogin /></AuthRedirect>} />
+          <Route path="/admin-register" element={<AuthRedirect redirectWhenAuthenticated><AdminRegister /></AuthRedirect>} />
+
+          {/* User Protected Routes */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/custom-builder" element={<ProtectedRoute><PizzaBuilder /></ProtectedRoute>} />
+          <Route path="/cart" element={<ProtectedRoute><CartSummary /></ProtectedRoute>} />
+          <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+          <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+          <Route path="/orders" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
+          <Route path="/order-tracking" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
+          <Route path="/order-tracking/:orderId" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
+
+          {/* Admin Protected Routes */}
+          <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/inventory" element={<AdminRoute><InventoryManagement /></AdminRoute>} />
+          <Route path="/admin/orders" element={<AdminRoute><IncomingOrders /></AdminRoute>} />
+          <Route path="/admin/drivers" element={<AdminRoute><DriversManagement /></AdminRoute>} />
+
+          {/* Driver Protected Routes */}
+          <Route path="/driver/dashboard" element={<DriverRoute><DriverDashboard /></DriverRoute>} />
+
+          {/* Default Root Redirect */}
+          <Route path="/" element={<RootRedirect />} />
+        </Routes>
+      </main>
+
+      {!isAdminOrDriverRoute && <Footer />}
+      <InstallPWA />
+    </div>
+  );
 }
 
 function AppContent() {
@@ -73,45 +140,7 @@ function AppContent() {
 
   return (
     <Router>
-      <div className="app-container" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
-        <Navbar />
-        <main style={{ flex: 1, padding: '20px' }}>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/login" element={<AuthRedirect redirectWhenAuthenticated><Login /></AuthRedirect>} />
-            <Route path="/register" element={<AuthRedirect redirectWhenAuthenticated><Register /></AuthRedirect>} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:id/:token" element={<ResetPassword />} />
-            <Route path="/admin-login" element={<AdminLogin />} />
-            <Route path="/admin-register" element={<AdminRegister />} />
-
-            {/* User Protected Routes */}
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/custom-builder" element={<ProtectedRoute><PizzaBuilder /></ProtectedRoute>} />
-            <Route path="/cart" element={<ProtectedRoute><CartSummary /></ProtectedRoute>} />
-            <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-            <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
-            <Route path="/orders" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
-            <Route path="/order-tracking" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
-            <Route path="/order-tracking/:orderId" element={<ProtectedRoute><OrderTracking /></ProtectedRoute>} />
-
-            {/* Admin Protected Routes */}
-            <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-            <Route path="/admin/inventory" element={<AdminRoute><InventoryManagement /></AdminRoute>} />
-            <Route path="/admin/orders" element={<AdminRoute><IncomingOrders /></AdminRoute>} />
-            <Route path="/admin/drivers" element={<AdminRoute><DriversManagement /></AdminRoute>} />
-
-            {/* Driver Protected Routes */}
-            <Route path="/driver/dashboard" element={<DriverRoute><DriverDashboard /></DriverRoute>} />
-
-            {/* Default Route */}
-            <Route path="/" element={<RootRedirect />} />
-          </Routes>
-        </main>
-        <Footer />
-        <InstallPWA />
-      </div>
+      <AppLayout />
     </Router>
   );
 }
