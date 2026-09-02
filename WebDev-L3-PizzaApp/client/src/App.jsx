@@ -84,13 +84,19 @@ function AppLayout() {
     user?.role === 'admin' ||
     user?.role === 'driver';
 
+  const isAuthRoute = 
+    ['/login', '/register', '/forgot-password', '/admin-login', '/admin-register'].includes(location.pathname) ||
+    location.pathname.startsWith('/reset-password');
+
+  const hideHeaderFooter = isAuthRoute || isAdminOrDriverRoute;
+
   return (
     <div className="app-container overflow-x-hidden" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       
-      {!isAdminOrDriverRoute && <Navbar />}
+      {!hideHeaderFooter && <Navbar />}
 
-      <main style={{ flex: 1 }} className={!isAdminOrDriverRoute ? "pt-20" : ""}>
+      <main style={{ flex: 1 }} className={!hideHeaderFooter ? "pt-20" : ""}>
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<AuthRedirect redirectWhenAuthenticated><Login /></AuthRedirect>} />
@@ -122,10 +128,13 @@ function AppLayout() {
 
           {/* Default Root Redirect */}
           <Route path="/" element={<RootRedirect />} />
+
+          {/* Catch-all Fallback Route */}
+          <Route path="*" element={<Navigate replace to="/" />} />
         </Routes>
       </main>
 
-      {!isAdminOrDriverRoute && <Footer />}
+      {!hideHeaderFooter && <Footer />}
       <InstallPWA />
     </div>
   );
