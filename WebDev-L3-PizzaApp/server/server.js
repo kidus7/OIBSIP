@@ -45,6 +45,79 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('join_driver', (driverId) => {
+    if (driverId) {
+      socket.join(`driver_${driverId}`);
+      console.log(`Socket ${socket.id} joined driver room: driver_${driverId}`);
+    }
+  });
+
+  socket.on('driver:request_claim', async (data) => {
+    try {
+      const { orderId, driverId } = data || {};
+      if (!orderId || !driverId) return;
+      const Order = require('./models/Order');
+      const order = await Order.findById(orderId);
+      if (order) {
+        order.pendingDriverId = driverId;
+        order.claimStatus = 'pending';
+        await order.save();
+        const updated = await Order.findById(orderId)
+          .populate('user', 'name email')
+          .populate('driver', 'name email phone')
+          .populate('pendingDriverId', 'name email phone');
+        const payload = {
+          orderId: updated._id,
+          orderDetails: updated,
+          driverDetails: updated.pendingDriverId
+        };
+        io.to('admin').emit('admin:claim_notification', payload);
+        io.to('admin').emit('order:claim_requested', payload);
+        io.to(`order_${updated._id}`).emit('order_updated', updated);
+        io.emit('order_updated', updated);
+      }
+    } catch (err) {
+      console.error('Error in driver:request_claim socket handler:', err);
+    }
+  });
+
+  socket.on('admin:resolve_claim', async (data) => {
+    try {
+      const { orderId, approved, driverId } = data || {};
+      if (!orderId) return;
+      const Order = require('./models/Order');
+      const order = await Order.findById(orderId);
+      if (order) {
+        const targetDriverId = driverId || order.pendingDriverId;
+        if (approved) {
+          if (targetDriverId) order.driver = targetDriverId;
+          order.status = 'Out for Delivery';
+          order.claimStatus = 'approved';
+          order.pendingDriverId = null;
+        } else {
+          order.claimStatus = 'declined';
+          order.pendingDriverId = null;
+        }
+        await order.save();
+        const updated = await Order.findById(orderId)
+          .populate('user', 'name email')
+          .populate('driver', 'name email phone')
+          .populate('pendingDriverId', 'name email phone');
+        const payload = { orderId: updated._id, approved, order: updated, orderDetails: updated };
+        io.to('admin').emit('order:claim_resolved', payload);
+        if (targetDriverId) {
+          io.to(`driver_${targetDriverId}`).emit('order:claim_resolved', payload);
+          io.to(`driver_${targetDriverId}`).emit('order_updated', updated);
+        }
+        io.to('driver').emit('order:claim_resolved', payload);
+        io.to(`order_${updated._id}`).emit('order_updated', updated);
+        io.emit('order_updated', updated);
+      }
+    } catch (err) {
+      console.error('Error in admin:resolve_claim socket handler:', err);
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log(`Socket disconnected: ${socket.id}`);
   });

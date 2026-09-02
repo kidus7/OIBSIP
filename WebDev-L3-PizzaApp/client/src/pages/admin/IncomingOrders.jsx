@@ -18,9 +18,13 @@ export default function IncomingOrders() {
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRows, setExpandedRows] = useState({});
+  const [incomingClaim, setIncomingClaim] = useState(null);
+  const [assignModalOrder, setAssignModalOrder] = useState(null);
+  const [onlineDrivers, setOnlineDrivers] = useState([]);
 
   useEffect(() => {
     fetchOrders();
+    fetchOnlineDrivers();
 
     // Socket.io real-time synchronization
     const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:4000';
@@ -34,10 +38,61 @@ export default function IncomingOrders() {
       fetchOrders(); // Instant re-fetch on any order update
     });
 
+    socket.on('admin:claim_notification', (data) => {
+      setIncomingClaim(data);
+    });
+
+    socket.on('order:claim_requested', (data) => {
+      setIncomingClaim(data);
+    });
+
+    socket.on('order:claim_resolved', () => {
+      setIncomingClaim(null);
+      fetchOrders();
+    });
+
     return () => {
       socket.disconnect();
     };
   }, []);
+
+  const fetchOnlineDrivers = async () => {
+    try {
+      const res = await API.get('/admin/drivers');
+      const drivers = res.data.data || res.data || [];
+      setOnlineDrivers(drivers.filter(d => d.isOnline || d.status === 'active'));
+    } catch (err) {
+      console.error('Failed to fetch online drivers', err);
+    }
+  };
+
+  const handleClaimApproval = async (orderId, approved, driverId) => {
+    try {
+      setError('');
+      setSuccessMessage('');
+      await API.patch(`/admin/orders/${orderId}/claim-approval`, { approved, driverId });
+      setIncomingClaim(null);
+      fetchOrders();
+      setSuccessMessage(`Driver claim ${approved ? 'approved & dispatched 🚀' : 'declined ❌'} successfully!`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Failed to process claim approval');
+    }
+  };
+
+  const handleAssignDriverSubmit = async (orderId, driverId) => {
+    try {
+      setError('');
+      setSuccessMessage('');
+      await API.patch(`/admin/orders/${orderId}/assign-driver`, { driverId });
+      setAssignModalOrder(null);
+      fetchOrders();
+      setSuccessMessage(`Driver assigned successfully!`);
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Failed to assign driver');
+    }
+  };
 
   const fetchOrders = async () => {
     try {
@@ -285,7 +340,7 @@ export default function IncomingOrders() {
 
                       {/* Status Dropdown <select> */}
                       <td className="py-3 px-3 align-top w-[160px] whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <div className="space-y-1">
+                        <div className="space-y-1.5">
                           <select
                             value={order.status}
                             onChange={(e) => handleStatusChange(order._id, e.target.value)}
@@ -297,6 +352,13 @@ export default function IncomingOrders() {
                               </option>
                             ))}
                           </select>
+                          <button
+                            type="button"
+                            onClick={() => setAssignModalOrder(order)}
+                            className="w-full py-1.5 px-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold shadow-sm transition flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <span>🚗</span> Assign Driver
+                          </button>
                           <div className="text-[10px] text-slate-400">
                             Updated: {new Date(order.updatedAt || order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
@@ -442,6 +504,124 @@ export default function IncomingOrders() {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Real-Time Approval Dialog Modal */}
+      {incomingClaim && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-6 border border-slate-100">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl animate-bounce">🚨</span>
+                <h3 className="text-lg font-extrabold text-slate-900">Incoming Driver Claim Request</h3>
+              </div>
+              <button onClick={() => setIncomingClaim(null)} className="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
+            </div>
+
+            <div className="space-y-4 text-xs text-slate-700">
+              <div className="bg-orange-50 border border-orange-200 p-4 rounded-2xl space-y-2">
+                <h4 className="font-extrabold text-orange-900 uppercase tracking-wider">Driver Details</h4>
+                <p><strong>Name:</strong> {incomingClaim.driverDetails?.name || 'Driver'}</p>
+                <p><strong>Phone:</strong> {incomingClaim.driverDetails?.phone || incomingClaim.driverDetails?.email || 'N/A'}</p>
+                <p><strong>Vehicle / Status:</strong> Active Delivery Driver 🛵</p>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-2">
+                <h4 className="font-extrabold text-slate-900 uppercase tracking-wider">Order #{incomingClaim.orderDetails?._id?.slice(-6)}</h4>
+                <p><strong>Total Amount:</strong> ₹{incomingClaim.orderDetails?.totalPrice || incomingClaim.orderDetails?.totalAmount}</p>
+                <p><strong>Destination:</strong> {incomingClaim.orderDetails?.deliveryAddress?.street || incomingClaim.orderDetails?.deliveryAddress?.address}, {incomingClaim.orderDetails?.deliveryAddress?.city}</p>
+                <div>
+                  <strong className="block mb-1">Items Breakdown:</strong>
+                  <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
+                    {incomingClaim.orderDetails?.pizzas?.map((p, i) => (
+                      <div key={i} className="bg-white p-2 rounded-xl border border-slate-200 flex justify-between items-center">
+                        <span>{p.name || 'Pizza'} (x{p.quantity || 1})</span>
+                        <span className="font-mono font-bold">₹{p.price}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => handleClaimApproval(incomingClaim.orderDetails?._id || incomingClaim.orderId, true, incomingClaim.driverDetails?._id)}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 rounded-2xl text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Approve & Dispatch</span>
+                <span>🚀</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleClaimApproval(incomingClaim.orderDetails?._id || incomingClaim.orderId, false)}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-extrabold py-3.5 rounded-2xl text-xs uppercase tracking-wider transition shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Decline</span>
+                <span>❌</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Driver Assignment Modal */}
+      {assignModalOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-6 border border-slate-100">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🚗</span>
+                <h3 className="text-lg font-extrabold text-slate-900">Manual Driver Assignment</h3>
+              </div>
+              <button onClick={() => setAssignModalOrder(null)} className="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-xs text-slate-600">
+                Select an online driver to directly assign Order <strong className="font-mono">#{assignModalOrder._id.slice(-6)}</strong>:
+              </p>
+
+              {onlineDrivers.length === 0 ? (
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-xs text-amber-800 text-center">
+                  No online drivers available at the moment.
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {onlineDrivers.map(driver => (
+                    <div 
+                      key={driver._id} 
+                      className="p-3 bg-slate-50 hover:bg-orange-50 border border-slate-200 hover:border-orange-300 rounded-2xl flex justify-between items-center transition cursor-pointer"
+                      onClick={() => handleAssignDriverSubmit(assignModalOrder._id, driver._id)}
+                    >
+                      <div>
+                        <p className="text-xs font-bold text-slate-900">{driver.name}</p>
+                        <p className="text-[11px] text-slate-500">{driver.email} | {driver.phone || 'No phone'}</p>
+                      </div>
+                      <button
+                        type="button"
+                        className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold shadow-sm"
+                      >
+                        Assign 🚀
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setAssignModalOrder(null)}
+                className="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 rounded-2xl text-xs transition cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </AdminLayout>

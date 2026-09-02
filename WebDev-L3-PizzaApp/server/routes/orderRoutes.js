@@ -9,6 +9,8 @@ const {
   getOrderById,
   getDriverAvailableOrders,
   claimOrder,
+  claimApproval,
+  assignDriver,
   completeOrder,
   updateOrderETA
 } = require('../controllers/orderController');
@@ -34,5 +36,9 @@ router.put('/:id/verify', protect, completeOrder);
 router.get('/:id', protect, getOrderById);
 router.put('/:id/status', protect, admin, updateOrderStatus);
 router.put('/:id/eta', protect, admin, updateOrderETA);
+router.patch('/:id/claim-approval', protect, admin, claimApproval);
+router.put('/:id/claim-approval', protect, admin, claimApproval);
+router.patch('/:id/assign-driver', protect, admin, assignDriver);
+router.put('/:id/assign-driver', protect, admin, assignDriver);
 
 module.exports = router;

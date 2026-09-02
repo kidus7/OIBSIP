@@ -339,16 +339,122 @@ exports.claimOrder = async (req, res, next) => {
     if (order.driver && order.driver.toString() !== req.user._id.toString()) {
       return res.status(400).json({ success: false, error: 'Order already claimed by another driver' });
     }
-    order.driver = req.user._id;
-    order.status = 'Out for Delivery';
+    order.pendingDriverId = req.user._id;
+    order.claimStatus = 'pending';
     await order.save();
 
     const updatedOrder = await Order.findById(order._id)
       .populate('user', 'name email')
-      .populate('driver', 'name email phone');
+      .populate('driver', 'name email phone')
+      .populate('pendingDriverId', 'name email phone');
 
     const io = req.app.get('io');
     if (io) {
+      const payload = {
+        orderId: updatedOrder._id,
+        orderDetails: updatedOrder,
+        driverDetails: req.user
+      };
+      io.to('admin').emit('order:claim_requested', payload);
+      io.to('admin').emit('admin:claim_notification', payload);
+      io.to(`order_${updatedOrder._id}`).emit('order_updated', updatedOrder);
+      io.emit('order_updated', updatedOrder);
+    }
+
+    res.status(200).json({ success: true, data: updatedOrder });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Admin approval or rejection of driver claim
+// @route   PATCH /api/v1/admin/orders/:id/claim-approval
+// @access  Private/Admin
+exports.claimApproval = async (req, res, next) => {
+  try {
+    const { approved, driverId } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ success: false, error: 'Order not found' });
+    }
+
+    const targetDriverId = driverId || order.pendingDriverId;
+
+    if (approved) {
+      if (targetDriverId) {
+        order.driver = targetDriverId;
+      }
+      order.status = 'Out for Delivery';
+      order.claimStatus = 'approved';
+      order.pendingDriverId = null;
+    } else {
+      order.claimStatus = 'declined';
+      order.pendingDriverId = null;
+    }
+
+    await order.save();
+
+    const updatedOrder = await Order.findById(order._id)
+      .populate('user', 'name email')
+      .populate('driver', 'name email phone')
+      .populate('pendingDriverId', 'name email phone');
+
+    const io = req.app.get('io');
+    if (io) {
+      const payload = {
+        orderId: updatedOrder._id,
+        approved,
+        order: updatedOrder,
+        orderDetails: updatedOrder
+      };
+      io.to('admin').emit('order:claim_resolved', payload);
+      if (targetDriverId) {
+        io.to(`driver_${targetDriverId}`).emit('order:claim_resolved', payload);
+        io.to(`driver_${targetDriverId}`).emit('order_updated', updatedOrder);
+      }
+      io.to('driver').emit('order:claim_resolved', payload);
+      io.to(`order_${updatedOrder._id}`).emit('order_updated', updatedOrder);
+      io.emit('order_updated', updatedOrder);
+    }
+
+    res.status(200).json({ success: true, data: updatedOrder });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Admin manual assign driver to order
+// @route   PATCH /api/v1/admin/orders/:id/assign-driver
+// @access  Private/Admin
+exports.assignDriver = async (req, res, next) => {
+  try {
+    const { driverId } = req.body;
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ success: false, error: 'Order not found' });
+    }
+
+    order.pendingDriverId = driverId;
+    order.claimStatus = 'pending';
+    await order.save();
+
+    const updatedOrder = await Order.findById(order._id)
+      .populate('user', 'name email')
+      .populate('driver', 'name email phone')
+      .populate('pendingDriverId', 'name email phone');
+
+    const io = req.app.get('io');
+    if (io) {
+      const payload = {
+        orderId: updatedOrder._id,
+        order: updatedOrder,
+        orderDetails: updatedOrder
+      };
+      if (driverId) {
+        io.to(`driver_${driverId}`).emit('order:direct_assignment', payload);
+      }
+      io.to('driver').emit('order:direct_assignment', payload);
+      io.to('admin').emit('order_updated', updatedOrder);
       io.to(`order_${updatedOrder._id}`).emit('order_updated', updatedOrder);
       io.emit('order_updated', updatedOrder);
     }

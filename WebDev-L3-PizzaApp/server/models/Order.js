@@ -32,6 +32,16 @@ const OrderSchema = new mongoose.Schema(
       ref: 'User',
       default: null
     },
+    pendingDriverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    },
+    claimStatus: {
+      type: String,
+      enum: ['none', 'pending', 'approved', 'declined'],
+      default: 'none'
+    },
     paymentInfo: {
       id: { type: String },
       status: { type: String, default: 'Pending' },

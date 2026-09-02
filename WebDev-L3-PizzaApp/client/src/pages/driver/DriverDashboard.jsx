@@ -19,6 +19,7 @@ export default function DriverDashboard() {
   const [inputCode, setInputCode] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(user?.isOnline ?? (user?.status === 'active') ?? true);
+  const [directAssignmentModalData, setDirectAssignmentModalData] = useState(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -38,16 +39,57 @@ export default function DriverDashboard() {
 
     socket.on('connect', () => {
       socket.emit('join_role', 'driver');
+      if (user?._id) {
+        socket.emit('join_driver', user._id);
+      }
     });
 
     socket.on('order_updated', () => {
       fetchDriverOrders(true); // silent re-fetch on order update event
     });
 
+    socket.on('order:claim_resolved', (data) => {
+      fetchDriverOrders(true);
+      toast.success(data.approved ? '🎉 Your order claim was approved by Admin!' : '❌ Your order claim was declined.');
+    });
+
+    socket.on('order:direct_assignment', (data) => {
+      setDirectAssignmentModalData(data);
+      fetchDriverOrders(true);
+    });
+
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [user]);
+
+  const handleAcceptDirectAssignment = async (orderId) => {
+    try {
+      await API.patch(`/admin/orders/${orderId}/claim-approval`, { approved: true, driverId: user?._id });
+      setDirectAssignmentModalData(null);
+      fetchDriverOrders(true);
+      toast.success('Accepted direct assignment successfully! 🛵');
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message || 'Failed to accept assignment');
+    }
+  };
+
+  const handleDeclineDirectAssignment = async (orderId) => {
+    try {
+      await API.patch(`/admin/orders/${orderId}/claim-approval`, { approved: false, driverId: user?._id });
+      setDirectAssignmentModalData(null);
+      fetchDriverOrders(true);
+      toast.success('Declined job assignment.');
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message || 'Failed to decline assignment');
+    }
+  };
+
+  const isMyPendingClaim = (order) => {
+    const pId = order.pendingDriverId?._id?.toString() || order.pendingDriverId?.toString();
+    const uId = user?._id?.toString() || user?.id?.toString();
+    return order.claimStatus === 'pending' && pId && uId && pId === uId;
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -381,13 +423,20 @@ export default function DriverDashboard() {
                         <strong className="text-slate-700">Items:</strong> {order.pizzas?.map(p => `${p.name || 'Pizza'} (x${p.quantity || 1})`).join(', ')}
                       </div>
 
-                      <button
-                        onClick={() => handleClaimOrder(order._id)}
-                        className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 min-h-[48px] rounded-xl text-base sm:text-sm uppercase tracking-wider transition shadow-lg shadow-orange-600/30 flex items-center justify-center space-x-2 cursor-pointer"
-                      >
-                        <span>Accept & Pickup Order</span>
-                        <span>🛵</span>
-                      </button>
+                      {isMyPendingClaim(order) ? (
+                        <div className="w-full bg-amber-100 text-amber-800 font-bold py-4 min-h-[48px] rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+                          <span className="animate-spin">⏳</span>
+                          <span>Awaiting Admin Approval...</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleClaimOrder(order._id)}
+                          className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 min-h-[48px] rounded-xl text-base sm:text-sm uppercase tracking-wider transition shadow-lg shadow-orange-600/30 flex items-center justify-center space-x-2 cursor-pointer"
+                        >
+                          <span>Accept & Pickup Order</span>
+                          <span>🛵</span>
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -505,6 +554,48 @@ export default function DriverDashboard() {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Direct Assignment Job Request Modal */}
+      {directAssignmentModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-6 border border-slate-100">
+            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl animate-bounce">🛵</span>
+                <h3 className="text-lg font-extrabold text-slate-900">Direct Job Assignment</h3>
+              </div>
+              <button onClick={() => setDirectAssignmentModalData(null)} className="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
+            </div>
+
+            <div className="space-y-4 text-xs text-slate-700">
+              <div className="bg-orange-50 border border-orange-200 p-4 rounded-2xl space-y-2">
+                <h4 className="font-extrabold text-orange-900 uppercase tracking-wider">Order #{directAssignmentModalData.orderId?.slice(-6) || directAssignmentModalData.orderDetails?._id?.slice(-6)}</h4>
+                <p><strong>Total Price:</strong> ₹{directAssignmentModalData.orderDetails?.totalPrice || directAssignmentModalData.order?.totalPrice || 0}</p>
+                <p><strong>Delivery Address:</strong> {directAssignmentModalData.orderDetails?.deliveryAddress?.street || directAssignmentModalData.orderDetails?.deliveryAddress?.address}, {directAssignmentModalData.orderDetails?.deliveryAddress?.city}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => handleAcceptDirectAssignment(directAssignmentModalData.orderId || directAssignmentModalData.orderDetails?._id)}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 rounded-2xl text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Accept Job</span>
+                <span>🚀</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeclineDirectAssignment(directAssignmentModalData.orderId || directAssignmentModalData.orderDetails?._id)}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-extrabold py-3.5 rounded-2xl text-xs uppercase tracking-wider transition shadow-lg shadow-red-600/30 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Decline</span>
+                <span>❌</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
