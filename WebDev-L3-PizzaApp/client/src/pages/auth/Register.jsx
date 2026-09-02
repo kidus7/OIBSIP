@@ -34,9 +34,9 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-12 bg-slate-950 text-white -m-[20px] lg:-m-[20px]">
+    <div className="min-h-screen h-full w-full bg-slate-950 text-white grid grid-cols-1 lg:grid-cols-12 p-4 sm:p-6 overflow-y-auto">
       {/* Left Panel (Visual Hero - 7 cols on desktop) */}
-      <div className="hidden lg:flex lg:col-span-7 relative overflow-hidden items-center justify-center p-12">
+      <div className="hidden lg:flex lg:col-span-7 relative overflow-hidden items-center justify-center p-12 rounded-3xl m-2">
         <div 
           className="absolute inset-0 bg-cover bg-center transform hover:scale-105 transition-transform duration-1000"
           style={{ backgroundImage: `url('https://images.unsplash.com/photo-1590947132387-155cc02f3212?q=80&w=1920&auto=format&fit=crop')` }}
@@ -73,10 +73,10 @@ export default function Register() {
       </div>
 
       {/* Right Panel (Form Area - 5 cols on desktop) */}
-      <div className="lg:col-span-5 flex flex-col justify-center items-center px-6 py-12 lg:px-12 bg-slate-950">
-        <div className="w-full max-w-md">
+      <div className="lg:col-span-5 flex flex-col justify-center items-center p-5 sm:p-8 rounded-3xl max-w-md w-full my-auto mx-auto bg-slate-950">
+        <div className="w-full">
           {/* Role Indicator / Tab Pill */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-6">
             <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs font-medium text-slate-400">
               <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
               <span>New Customer Registration</span>
@@ -84,25 +84,25 @@ export default function Register() {
           </div>
 
           <div className="mb-6">
-            <h2 className="text-3xl font-bold tracking-tight text-white mb-2">Create an Account</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">Create an Account</h2>
             <p className="text-slate-400 text-sm">Sign up in seconds to start ordering gourmet pizzas.</p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-950/50 border border-red-800/80 text-red-300 rounded-xl text-sm flex items-center space-x-3 shadow-lg">
+            <div className="mb-4 p-3 bg-red-950/50 border border-red-800/80 text-red-300 rounded-xl text-sm flex items-center space-x-3 shadow-lg">
               <span className="w-1.5 h-6 bg-red-500 rounded-full"></span>
               <span>{error}</span>
             </div>
           )}
 
           {message && (
-            <div className="mb-6 p-4 bg-emerald-950/50 border border-emerald-800/80 text-emerald-300 rounded-xl text-sm flex items-center space-x-3 shadow-lg">
+            <div className="mb-4 p-3 bg-emerald-950/50 border border-emerald-800/80 text-emerald-300 rounded-xl text-sm flex items-center space-x-3 shadow-lg">
               <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
               <span>{message}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Full Name</label>
               <div className="relative bg-slate-900/80 border border-slate-800 focus-within:border-red-500 rounded-xl transition-all duration-200">

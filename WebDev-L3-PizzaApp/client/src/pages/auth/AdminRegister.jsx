@@ -54,9 +54,9 @@ export default function AdminRegister() {
   };
 
   return (
-    <div className="bg-linear-to-br from-slate-950 via-slate-900 to-red-950/30 min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen h-full w-full bg-slate-950 text-white flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-linear-to-br from-slate-950 via-slate-900 to-red-950/30">
       {/* Outer Card: Rounded split container */}
-      <div className="max-w-4xl w-full bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+      <div className="max-w-4xl w-full bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 my-auto">
         
         {/* Left Visual Branding Banner (Desktop View) */}
         <div className="hidden md:flex relative overflow-hidden flex-col justify-between p-8 lg:p-12">
@@ -107,7 +107,7 @@ export default function AdminRegister() {
         </div>
 
         {/* Right Form Panel */}
-        <div className="flex flex-col justify-center px-6 py-10 md:p-10 bg-slate-950/70">
+        <div className="flex flex-col justify-center p-5 sm:p-8 md:p-10 bg-slate-950/70 my-auto">
           <div className="w-full max-w-sm mx-auto">
             
             <div className="mb-6">
@@ -129,7 +129,7 @@ export default function AdminRegister() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                   Full Name

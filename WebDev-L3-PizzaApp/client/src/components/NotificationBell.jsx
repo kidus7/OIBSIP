@@ -70,9 +70,9 @@ export default function NotificationBell() {
 
       {/* Floating Notification Drawer / Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-orange-100 z-50 overflow-hidden animate-fadeIn">
+        <div className="fixed inset-x-4 top-20 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:w-96 z-50 max-h-[80vh] overflow-y-auto rounded-3xl shadow-2xl border border-slate-100 bg-white animate-fadeIn">
           {/* Header */}
-          <div className="bg-linear-to-r from-orange-600 to-red-600 text-white px-4 py-3.5 flex items-center justify-between">
+          <div className="bg-linear-to-r from-orange-600 to-red-600 text-white p-3 sm:p-4 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center space-x-2">
               <span className="text-lg">🔔</span>
               <h3 className="font-bold text-sm tracking-wide">Notifications</h3>
@@ -103,7 +103,7 @@ export default function NotificationBell() {
           </div>
 
           {/* List */}
-          <div className="max-h-96 overflow-y-auto divide-y divide-slate-100 bg-slate-50/50">
+          <div className="max-h-[60vh] overflow-y-auto divide-y divide-slate-100 bg-slate-50/50">
             {notifications.length === 0 ? (
               <div className="py-12 px-4 text-center">
                 <span className="text-3xl">📭</span>
