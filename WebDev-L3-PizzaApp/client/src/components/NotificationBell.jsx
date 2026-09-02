@@ -50,7 +50,7 @@ export default function NotificationBell() {
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2.5 rounded-full bg-orange-50 text-orange-600 hover:bg-orange-100 hover:text-red-600 transition-all shadow-sm focus:outline-none flex items-center justify-center cursor-pointer"
+        className="relative p-2.5 rounded-full bg-orange-50 text-orange-600 hover:bg-orange-100 hover:text-red-600 transition-all shadow-sm focus:outline-none flex items-center justify-center cursor-pointer dark:bg-slate-800 dark:text-orange-400 dark:hover:bg-slate-700"
         title="Notifications"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

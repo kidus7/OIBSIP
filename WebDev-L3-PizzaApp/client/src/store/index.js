@@ -1,17 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { baseApi } from './api/baseApi';
+import authReducer from './slices/authSlice';
+import notificationReducer from './slices/notificationSlice';
 
 export const store = configureStore({
   reducer: {
     [baseApi.reducerPath]: baseApi.reducer,
-    auth: (state = { token: localStorage.getItem('token') || null }, action) => {
-      switch (action.type) {
-        case 'auth/setToken':
-          return { ...state, token: action.payload };
-        default:
-          return state;
-      }
-    }
+    auth: authReducer,
+    notifications: notificationReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(baseApi.middleware),
