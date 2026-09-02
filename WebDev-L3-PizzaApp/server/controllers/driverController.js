@@ -97,3 +97,63 @@ exports.verifyDeliveryOTP = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Respond to direct job assignment (Accept or Decline)
+// @route   PATCH /api/v1/driver/orders/:id/assignment-response
+// @access  Private/Driver
+exports.assignmentResponse = async (req, res, next) => {
+  try {
+    const { accept } = req.body;
+    const orderId = req.params.id;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ success: false, error: 'Order not found', message: 'Order not found' });
+    }
+
+    if (accept) {
+      order.driver = req.user._id;
+      order.status = 'Out for Delivery';
+      order.claimStatus = 'approved';
+      order.pendingDriverId = null;
+    } else {
+      order.pendingDriverId = null;
+      order.claimStatus = 'none';
+      order.status = 'Sent for Delivery';
+      order.driver = null;
+    }
+
+    await order.save();
+
+    const updatedOrder = await Order.findById(order._id)
+      .populate('user', 'name email')
+      .populate('driver', 'name email phone')
+      .populate('pendingDriverId', 'name email phone');
+
+    const io = req.app.get('io');
+    if (io) {
+      const payload = {
+        orderId: updatedOrder._id,
+        accept,
+        order: updatedOrder,
+        orderDetails: updatedOrder
+      };
+      io.to('admin').emit('order:assignment_resolved', payload);
+      io.to('admin').emit('order_updated', updatedOrder);
+      io.to('driver').emit('order:assignment_resolved', payload);
+      io.to(`driver_${req.user._id}`).emit('order_updated', updatedOrder);
+      io.to(`order_${updatedOrder._id}`).emit('order_updated', updatedOrder);
+      io.emit('order_updated', updatedOrder);
+      io.emit('order:assignment_resolved', payload);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: accept ? 'Assignment accepted successfully' : 'Assignment declined successfully',
+      data: updatedOrder,
+      order: updatedOrder
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -145,7 +145,7 @@ export default function OrderTracking() {
         <div>
           <div className="flex items-center space-x-3">
             <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              Live Tracking (Socket.io)
+              Live Tracking
             </span>
             <span className="font-mono text-xs text-slate-400">ID: {order?._id}</span>
           </div>

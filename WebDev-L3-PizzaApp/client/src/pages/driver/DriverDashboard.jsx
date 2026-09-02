@@ -65,7 +65,7 @@ export default function DriverDashboard() {
 
   const handleAcceptDirectAssignment = async (orderId) => {
     try {
-      await API.patch(`/admin/orders/${orderId}/claim-approval`, { approved: true, driverId: user?._id });
+      await API.patch(`/driver/orders/${orderId}/assignment-response`, { accept: true });
       setDirectAssignmentModalData(null);
       fetchDriverOrders(true);
       toast.success('Accepted direct assignment successfully! 🛵');
@@ -76,7 +76,7 @@ export default function DriverDashboard() {
 
   const handleDeclineDirectAssignment = async (orderId) => {
     try {
-      await API.patch(`/admin/orders/${orderId}/claim-approval`, { approved: false, driverId: user?._id });
+      await API.patch(`/driver/orders/${orderId}/assignment-response`, { accept: false });
       setDirectAssignmentModalData(null);
       fetchDriverOrders(true);
       toast.success('Declined job assignment.');
