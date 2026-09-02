@@ -231,51 +231,49 @@ export default function Dashboard() {
           </div>
 
           {/* Right Column (Hero Visual) */}
-          <div className="relative flex items-center justify-center">
-            {/* Large circular backdrop layer */}
-            <div className="w-[380px] h-[380px] sm:w-[420px] sm:h-[420px] rounded-full bg-linear-to-tr from-orange-100/60 to-amber-50/60 flex items-center justify-center relative shadow-inner">
-              
-              {/* Bestseller Pizza Card in Center */}
-              <div className="w-[300px] sm:w-[340px] bg-white rounded-2xl p-4 shadow-xl shadow-orange-500/10 border border-slate-100 relative group transition-all duration-300 hover:scale-105">
-                <div className="absolute top-6 right-6 z-10 bg-linear-to-r from-orange-500 to-red-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
-                  <span>🔥</span>
-                  <span>Bestseller</span>
+          <div className="flex items-center justify-center relative py-8 lg:py-12">
+            {/* Backdrop Glow Circle */}
+            <div className="absolute w-[440px] h-[440px] lg:w-[560px] lg:h-[560px] rounded-full bg-linear-to-tr from-orange-100/70 via-amber-100/50 to-orange-50/30 blur-xs z-0 pointer-events-none" />
+
+            {/* Bestseller Pizza Card in Center */}
+            <div className="relative z-10 w-full max-w-[460px] lg:max-w-[520px] bg-white rounded-3xl p-6 shadow-2xl shadow-orange-500/10 border border-slate-100/80 transition-all duration-300 hover:scale-[1.01]">
+              <div className="absolute top-5 right-5 z-10 bg-orange-500 text-white text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-md">
+                Bestseller
+              </div>
+              <div className="h-64 sm:h-72 lg:h-80 w-full object-cover rounded-2xl overflow-hidden relative bg-slate-100">
+                <img
+                  src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80"
+                  alt="Truffle Mushroom Artisan"
+                  className="h-64 sm:h-72 lg:h-80 w-full object-cover rounded-2xl"
+                />
+              </div>
+              <div className="mt-3 flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-4 mb-1">Truffle Mushroom Artisan</h3>
+                  <p className="text-xs sm:text-sm font-medium text-slate-500">Wood-Fired Crust • Fresh Thyme</p>
                 </div>
-                <div className="h-48 rounded-2xl overflow-hidden relative bg-slate-100">
-                  <img
-                    src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80"
-                    alt="Truffle Mushroom Artisan"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <div>
-                    <h3 className="font-extrabold text-slate-900 text-sm">Truffle Mushroom Artisan</h3>
-                    <p className="text-[11px] text-slate-500">Wood-Fired Crust • Fresh Thyme</p>
-                  </div>
-                  <span className="font-black text-orange-600 text-base">$16.50</span>
-                </div>
+                <span className="text-xl font-black text-orange-600 bg-orange-50 px-4 py-1.5 rounded-xl">$16.50</span>
               </div>
 
-              {/* Floating Badge 1: 30-min delivery */}
-              <div className="absolute -left-4 sm:left-2 top-10 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg border border-slate-100 flex items-center gap-2 animate-bounce">
-                <span className="text-lg">🛵</span>
+              {/* Floating Badge 1: Delivery Badge */}
+              <div className="absolute -top-4 left-6 sm:left-8 z-20 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-2.5">
+                <span className="text-base sm:text-lg">🛵</span>
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Delivery Time</p>
                   <p className="text-xs font-black text-slate-900">30 Min Guaranteed</p>
                 </div>
               </div>
 
-              {/* Floating Badge 2: Rating */}
-              <div className="absolute -right-4 sm:right-2 bottom-12 bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-lg border border-slate-100 flex items-center gap-2">
-                <span className="text-lg">⭐</span>
+              {/* Floating Badge 2: Top Rated Badge */}
+              <div className="absolute -bottom-4 right-6 sm:right-8 z-20 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-2.5">
+                <span className="text-base sm:text-lg">⭐</span>
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Top Rated</p>
                   <p className="text-xs font-black text-slate-900">4.9/5 Foodie Choice</p>
                 </div>
               </div>
-
             </div>
+
           </div>
 
         </div>
