@@ -77,7 +77,7 @@ export default function AdminLayout({ children, title }) {
           </nav>
         </div>
 
-        <div className="p-4 border-t border-slate-800">
+        {/* <div className="p-4 border-t border-slate-800">
           <Link
             to="/dashboard"
             className="flex items-center space-x-2 px-4 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-colors mb-2"
@@ -86,7 +86,7 @@ export default function AdminLayout({ children, title }) {
             <span>Back to Main Site</span>
           </Link>
           <div className="text-xs text-slate-500 px-4 py-1">v1.0.0 Production</div>
-        </div>
+        </div> */}
       </aside>
 
       {/* Main Content Region */}

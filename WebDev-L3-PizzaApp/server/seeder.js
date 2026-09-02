@@ -4,10 +4,11 @@ const Inventory = require('./models/Inventory');
 const User = require('./models/User');
 const bcrypt = require('bcryptjs');
 
-// Load env vars
+// Load environment variables
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/pizza-app';
+// Ensure path defaults to pizza-app database
+const MONGO_URI = process.env.MONGO_URI
 
 const inventoryData = [
   // Bases (5)
@@ -112,11 +113,44 @@ const seedData = async () => {
 
     // Clear Inventory collection
     await Inventory.deleteMany();
-    console.log('Inventory collection cleared.');
+    console.log('📦 Inventory collection cleared.');
 
-    // Seed data
+    // Seed Inventory items
     await Inventory.insertMany(inventoryData);
-    console.log('Inventory data seeded successfully!');
+    console.log('✅ Inventory & Pre-made pizzas seeded successfully!');
+
+    // Seed Default Admin and Driver Users
+    const salt = await bcrypt.genSalt(10);
+    const defaultPassword = await bcrypt.hash('pass@123!', salt);
+
+    // Upsert Admin User
+    await User.findOneAndUpdate(
+      { email: 'admin@pizza.com' },
+      {
+        name: 'Admin User',
+        email: 'admin@pizza.com',
+        password: defaultPassword,
+        role: 'admin',
+        isVerified: true
+      },
+      { upsert: true, new: true }
+    );
+    console.log('🛡️ Default Admin user seeded (admin@pizza.com)');
+
+    // Upsert Verified Driver User
+    await User.findOneAndUpdate(
+      { email: 'driver@pizza.com' },
+      {
+        name: 'Mignot Driver',
+        email: 'driver@pizza.com',
+        password: defaultPassword,
+        role: 'driver',
+        isVerified: true,
+        isActive: true
+      },
+      { upsert: true, new: true }
+    );
+    console.log('🚗 Default Driver user seeded (driver@pizza.com)');
 
     process.exit(0);
   } catch (error) {

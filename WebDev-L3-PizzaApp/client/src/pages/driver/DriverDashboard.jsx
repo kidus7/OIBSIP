@@ -300,7 +300,7 @@ export default function DriverDashboard() {
         <div>
           <div className="flex items-center space-x-2">
             <span className="bg-white/25 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              Driver Portal (Socket.io) 🛵
+              Driver Portal 🛵
             </span>
             <span className="text-xs text-orange-100">Welcome, {user?.name || 'Driver'}</span>
           </div>

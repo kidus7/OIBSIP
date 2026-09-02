@@ -19,7 +19,7 @@ exports.createDriver = async (req, res, next) => {
       password,
       phone: phone || '',
       role: 'driver',
-      isVerified: true
+      isVerified: false
     });
 
     res.status(201).json({
