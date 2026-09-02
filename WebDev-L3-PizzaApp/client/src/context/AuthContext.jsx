@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
         if (parsed?.preferences?.theme) return parsed.preferences.theme;
       } catch {}
     }
-    return localStorage.getItem('theme') || 'dark';
+    return localStorage.getItem('theme') || 'light';
   });
 
   useEffect(() => {
@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       root.classList.remove('dark');
     }
+    document.body.className = "bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200";
     localStorage.setItem('theme', theme);
   }, [theme]);
 

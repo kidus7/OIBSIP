@@ -98,7 +98,7 @@ const inventoryData = [
     category: 'pre-made',
     description: 'Spicy schezwan, mozzarella, thin crust, jalapenos, onions, bell peppers',
     price: 15.49,
-    imageURL: 'https://images.unsplash.com/photo-1595750005273-094dde6702f2?q=80&w=1000&auto=format&fit=crop',
+    imageURL: 'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?q=80&w=1000&auto=format&fit=crop',
     stock: 50,
     minThreshold: 10,
     unit: 'units',

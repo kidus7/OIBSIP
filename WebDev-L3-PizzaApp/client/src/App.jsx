@@ -90,14 +90,6 @@ function AppLayout() {
 
   const hideHeaderFooter = isAuthRoute || isAdminOrDriverRoute;
 
-  React.useEffect(() => {
-    if (isAuthRoute || isAdminOrDriverRoute) {
-      document.body.style.backgroundColor = '#020617';
-    } else {
-      document.body.style.backgroundColor = '#f9fafb';
-    }
-  }, [isAuthRoute, isAdminOrDriverRoute]);
-
   return (
     <div className="app-container overflow-x-hidden" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />

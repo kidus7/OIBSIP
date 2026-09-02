@@ -61,7 +61,6 @@ export default function Checkout() {
         subtotal: grandTotal
       });
       const data = res.data.data || res.data;
-      // console.log('Razorpay order creation response:', data);
       
       const options = {
         key: res.data.key_id || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mockkey',
@@ -111,24 +110,24 @@ export default function Checkout() {
   const handlePayAndPlaceOrder = handlePayment;
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-orange-50/50 via-white to-orange-50/30 pt-20 pb-32 sm:pb-20 overflow-x-hidden">
+    <div className="min-h-screen bg-linear-to-b from-orange-50/50 via-white to-orange-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 pt-20 pb-32 sm:pb-20 overflow-x-hidden transition-colors duration-200">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="text-center max-w-xl mx-auto mb-10">
-          <span className="text-xs font-bold text-orange-600 uppercase tracking-widest bg-orange-100 px-3.5 py-1.5 rounded-full">
+          <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest bg-orange-100 dark:bg-orange-950/60 px-3.5 py-1.5 rounded-full">
             Secure Checkout 🔒
           </span>
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 mt-3 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-3 tracking-tight">
             Complete Your Order
           </h1>
-          <p className="text-slate-600 text-sm mt-2">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">
             Enter your delivery address and pay securely using Razorpay gateway.
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-2xl text-sm font-bold shadow-sm flex items-center gap-3">
+          <div className="mb-6 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 px-6 py-4 rounded-2xl text-sm font-bold shadow-sm flex items-center gap-3">
             <span>⚠️</span>
             <p>{error}</p>
           </div>
@@ -137,15 +136,15 @@ export default function Checkout() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           
           {/* Left: Delivery Address Form */}
-          <div className="md:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-100">
-            <h2 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
+          <div className="md:col-span-7 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-100 dark:border-slate-800">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 flex items-center gap-2">
               <span>📍</span>
               <span>Delivery Details</span>
             </h2>
 
             <form onSubmit={handlePayAndPlaceOrder} className="space-y-5">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
                   Street Address
                 </label>
                 <input
@@ -154,13 +153,13 @@ export default function Checkout() {
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
                   placeholder="123 Artisan Pizza Lane, Suite 4B"
-                  className="w-full px-4 py-3.5 min-h-[48px] rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-base sm:text-sm font-medium text-slate-800"
+                  className="w-full px-4 py-3.5 min-h-[48px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-base sm:text-sm font-medium text-slate-800 dark:text-slate-200"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
                     City
                   </label>
                   <input
@@ -169,12 +168,12 @@ export default function Checkout() {
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="New Delhi / Mumbai"
-                    className="w-full px-4 py-3.5 min-h-[48px] rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-base sm:text-sm font-medium text-slate-800"
+                    className="w-full px-4 py-3.5 min-h-[48px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-base sm:text-sm font-medium text-slate-800 dark:text-slate-200"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
                     Postal Code / Zip
                   </label>
                   <input
@@ -183,13 +182,13 @@ export default function Checkout() {
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder="110001"
-                    className="w-full px-4 py-3.5 min-h-[48px] rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-base sm:text-sm font-medium text-slate-800"
+                    className="w-full px-4 py-3.5 min-h-[48px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-base sm:text-sm font-medium text-slate-800 dark:text-slate-200"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
                   Contact Phone Number
                 </label>
                 <input
@@ -198,7 +197,7 @@ export default function Checkout() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 98765 43210"
-                  className="w-full px-4 py-3.5 min-h-[48px] rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-base sm:text-sm font-medium text-slate-800"
+                  className="w-full px-4 py-3.5 min-h-[48px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-base sm:text-sm font-medium text-slate-800 dark:text-slate-200"
                 />
               </div>
 
@@ -231,49 +230,49 @@ export default function Checkout() {
           </div>
 
           {/* Right: Order Summary Preview */}
-          <div className="md:col-span-5 bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-orange-100 space-y-6">
-            <h3 className="font-black text-slate-900 text-lg border-b border-slate-100 pb-4 flex items-center gap-2">
+          <div className="md:col-span-5 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-orange-100 dark:border-slate-800 space-y-6">
+            <h3 className="font-black text-slate-900 dark:text-white text-lg border-b border-slate-100 dark:border-slate-800 pb-4 flex items-center gap-2">
               <span>🧾</span>
               <span>Cart Overview</span>
             </h3>
 
             <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
               {cart.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs py-2 border-b border-slate-50">
+                <div key={idx} className="flex items-center justify-between text-xs py-2 border-b border-slate-50 dark:border-slate-800">
                   <div className="truncate pr-2">
-                    <span className="font-bold text-slate-800 block truncate">{item.name}</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">{item.name}</span>
                     <span className="text-slate-400">Qty: {item.quantity || 1}</span>
                   </div>
-                  <span className="font-black text-orange-600 shrink-0">
+                  <span className="font-black text-orange-600 dark:text-orange-400 shrink-0">
                     ${((item.price || item.totalPrice || 0) * (item.quantity || 1)).toFixed(2)}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="space-y-2 text-xs pt-2 border-t border-slate-100">
-              <div className="flex justify-between text-slate-600">
+            <div className="space-y-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>Subtotal</span>
-                <span className="font-bold text-slate-900">${subtotal.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-white">${subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>Delivery Fee</span>
-                <span className="font-bold text-slate-900">${deliveryFee.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-white">${deliveryFee.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>Tax / GST (5%)</span>
-                <span className="font-bold text-slate-900">${tax.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-white">${tax.toFixed(2)}</span>
               </div>
-              <div className="border-t border-slate-100 pt-2 flex justify-between text-sm font-black text-slate-900">
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-2 flex justify-between text-sm font-black text-slate-900 dark:text-white">
                 <span>Total Amount</span>
-                <span className="text-orange-600">${grandTotal.toFixed(2)}</span>
+                <span className="text-orange-600 dark:text-orange-400">${grandTotal.toFixed(2)}</span>
               </div>
             </div>
 
             <div className="pt-2">
               <Link
                 to="/cart"
-                className="w-full block py-2.5 rounded-xl font-bold text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all text-center"
+                className="w-full block py-2.5 rounded-xl font-bold text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-center"
               >
                 ← Edit Cart
               </Link>

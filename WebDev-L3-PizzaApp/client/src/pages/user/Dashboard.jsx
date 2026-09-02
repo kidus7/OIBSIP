@@ -377,8 +377,9 @@ export default function Dashboard() {
                   {/* Pizza Image */}
                   <div className="relative h-56 overflow-hidden bg-slate-100 dark:bg-slate-800">
                     <img
-                      src={pizza.image || pizza.imageURL}
+                      src={pizza.imageURL || pizza.image || "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1000&auto=format&fit=crop"}
                       alt={pizza.name}
+                      onError={(e) => { e.target.onerror = null; e.target.src = "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1000&auto=format&fit=crop"; }}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                   </div>

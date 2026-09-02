@@ -379,6 +379,12 @@ export default function Navbar() {
               )}
             </div>
 
+            {/* Theme Toggle Button in Mobile Drawer */}
+            <button onClick={toggleTheme} className="flex items-center justify-between w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-sm mt-4">
+              <span>{theme === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode'}</span>
+              <span className="text-xs bg-orange-500 text-white px-2 py-0.5 rounded-full">{theme === 'dark' ? 'ON' : 'OFF'}</span>
+            </button>
+
             {/* 3. User Profile Card at bottom */}
             <div className="pt-2 border-t border-slate-100">
               {user ? (

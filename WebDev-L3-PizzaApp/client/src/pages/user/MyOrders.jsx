@@ -41,19 +41,19 @@ export default function MyOrders() {
       case 'Order Received':
       case 'Order Placed':
       case 'Order Accepted':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-800';
       case 'In Kitchen':
       case 'Baked':
-        return 'bg-orange-100 text-orange-800 border-orange-400 shadow-lg shadow-orange-500/20 animate-pulse';
+        return 'bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 border-orange-400 dark:border-orange-800 shadow-lg shadow-orange-500/20 animate-pulse';
       case 'Sent to Delivery':
       case 'Out for Delivery':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
+        return 'bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-800';
       case 'Delivered':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+        return 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800';
       case 'Cancelled':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 border-red-300 dark:border-red-800';
       default:
-        return 'bg-slate-100 text-slate-800 border-slate-300';
+        return 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700';
     }
   };
 
@@ -61,11 +61,11 @@ export default function MyOrders() {
     <div className="max-w-6xl mx-auto px-4 py-4 sm:px-6 sm:py-8 py-20 min-h-screen overflow-x-hidden">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <span className="text-xs font-bold text-orange-600 uppercase tracking-widest bg-orange-100 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase tracking-widest bg-orange-100 dark:bg-orange-950/60 px-3 py-1 rounded-full">
             Order History
           </span>
-          <h1 className="text-3xl font-extrabold text-slate-900 mt-3 tracking-tight">My Orders</h1>
-          <p className="text-slate-600 text-sm mt-1">Track your active pizza deliveries and review past orders.</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-3 tracking-tight">My Orders</h1>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">Track your active pizza deliveries and review past orders.</p>
         </div>
         <Link
           to="/dashboard"
@@ -76,7 +76,7 @@ export default function MyOrders() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6">
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 p-4 rounded-xl mb-6">
           <p>{error}</p>
         </div>
       )}
@@ -84,10 +84,10 @@ export default function MyOrders() {
       {loading ? (
         <LoadingSpinner fullScreen={false} message="Fetching latest data..." />
       ) : orders.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 text-center">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-12 text-center">
           <span className="text-5xl">📦</span>
-          <h3 className="text-xl font-bold text-slate-800 mt-4">No orders placed yet</h3>
-          <p className="text-sm text-slate-500 mt-1">Your ordered custom and ready-made pizzas will appear here.</p>
+          <h3 className="text-xl font-bold text-slate-800 dark:text-white mt-4">No orders placed yet</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Your ordered custom and ready-made pizzas will appear here.</p>
           <Link
             to="/dashboard"
             className="inline-block mt-6 px-6 py-3 bg-red-600 text-white text-xs font-bold rounded-xl shadow hover:bg-red-700 transition"
@@ -105,10 +105,10 @@ export default function MyOrders() {
             return (
               <div
                 key={order._id}
-                className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition"
+                className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-md transition"
               >
                 {/* Header bar */}
-                <div className="bg-slate-900 text-white px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div className="bg-slate-900 dark:bg-slate-950 text-white px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800">
                   <div>
                     <div className="flex items-center space-x-3">
                       <span className="font-mono text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded">
@@ -130,23 +130,23 @@ export default function MyOrders() {
                 {/* Body: Item Breakdown */}
                 <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
                   <div className="md:col-span-2 space-y-3">
-                    <h4 className="font-bold text-slate-800 text-sm flex items-center space-x-2">
+                    <h4 className="font-bold text-slate-800 dark:text-white text-sm flex items-center space-x-2">
                       <span>🍕</span>
                       <span>Item Breakdown ({order.pizzas?.length || 0})</span>
                     </h4>
                     <div className="space-y-2">
                       {order.pizzas?.map((pizza, idx) => (
-                        <div key={idx} className="bg-slate-50 border border-slate-200 p-3 rounded-xl flex justify-between items-center text-xs">
+                        <div key={idx} className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-3 rounded-xl flex justify-between items-center text-xs">
                           <div>
-                            <span className="font-bold text-red-600 uppercase">{pizza.name || `Pizza #${idx + 1}`} (Qty: {pizza.quantity || 1})</span>
-                            <div className="text-slate-600 mt-0.5 space-x-2">
-                              {pizza.base && <span><strong className="text-slate-700">Base:</strong> {pizza.base}</span>}
-                              {pizza.sauce && <span>• <strong className="text-slate-700">Sauce:</strong> {pizza.sauce}</span>}
-                              {pizza.cheese && <span>• <strong className="text-slate-700">Cheese:</strong> {pizza.cheese}</span>}
-                              {pizza.veggies && pizza.veggies.length > 0 && <span>• <strong className="text-slate-700">Veggies:</strong> {pizza.veggies.join(', ')}</span>}
+                            <span className="font-bold text-red-600 dark:text-red-400 uppercase">{pizza.name || `Pizza #${idx + 1}`} (Qty: {pizza.quantity || 1})</span>
+                            <div className="text-slate-600 dark:text-slate-300 mt-0.5 space-x-2">
+                              {pizza.base && <span><strong className="text-slate-700 dark:text-slate-200">Base:</strong> {pizza.base}</span>}
+                              {pizza.sauce && <span>• <strong className="text-slate-700 dark:text-slate-200">Sauce:</strong> {pizza.sauce}</span>}
+                              {pizza.cheese && <span>• <strong className="text-slate-700 dark:text-slate-200">Cheese:</strong> {pizza.cheese}</span>}
+                              {pizza.veggies && pizza.veggies.length > 0 && <span>• <strong className="text-slate-700 dark:text-slate-200">Veggies:</strong> {pizza.veggies.join(', ')}</span>}
                             </div>
                           </div>
-                          <div className="font-bold text-slate-800">
+                          <div className="font-bold text-slate-800 dark:text-slate-200">
                             ₹{pizza.price}
                           </div>
                         </div>
@@ -155,9 +155,9 @@ export default function MyOrders() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-col justify-center items-stretch md:items-end space-y-3 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6">
-                    <div className="text-xs text-slate-500 mb-1">
-                      Payment: <span className={`font-semibold ${order.paymentInfo?.status === 'Paid' ? 'text-emerald-600' : 'text-amber-600'}`}>{order.paymentInfo?.status || 'Pending'}</span>
+                  <div className="flex flex-col justify-center items-stretch md:items-end space-y-3 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 pt-4 md:pt-0 md:pl-6">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">
+                      Payment: <span className={`font-semibold ${order.paymentInfo?.status === 'Paid' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>{order.paymentInfo?.status || 'Pending'}</span>
                     </div>
                     <button
                       onClick={() => handleReorder(order)}
