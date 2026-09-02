@@ -6,13 +6,18 @@ import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const { cart } = useCart();
-  const { user, logout } = useAuth();
+  const { user, logout, theme, setTheme } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef(null);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+  };
 
   useEffect(() => {
     setDropdownOpen(false);
@@ -78,7 +83,7 @@ export default function Navbar() {
   return (
     <header className="fixed top-3 left-0 right-0 z-50 px-6 sm:px-10 md:px-14 lg:px-16 xl:px-8">
       <div className="max-w-7xl mx-auto">
-        <nav className="w-full bg-white/95 backdrop-blur-md rounded-full border border-slate-100 shadow-md shadow-slate-200/50 px-4 lg:px-6 py-2 flex items-center justify-between transition-all duration-300">
+        <nav className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-full border border-slate-100 dark:border-slate-800 shadow-md shadow-slate-200/50 dark:shadow-slate-950/50 px-4 lg:px-6 py-2 flex items-center justify-between transition-all duration-300">
           <div className="w-full flex items-center justify-between">
             
             {/* Logo */}
@@ -91,7 +96,7 @@ export default function Navbar() {
                   <span className="font-extrabold text-base sm:text-lg bg-linear-to-r from-orange-500 to-red-600 bg-clip-text text-transparent tracking-tight">
                     SliceMasters
                   </span>
-                  <span className="text-[10px] text-slate-400 font-medium tracking-widest uppercase -mt-1">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium tracking-widest uppercase -mt-1">
                     Artisan & Fresh
                   </span>
                 </div>
@@ -102,40 +107,34 @@ export default function Navbar() {
             <div className="hidden lg:flex items-center space-x-1 xl:space-x-3 min-w-0 flex-1 justify-center">
               <Link
                 to="/dashboard"
-                className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs xl:text-sm font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors whitespace-nowrap flex-shrink-0"
+                className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs xl:text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-slate-800 hover:text-orange-600 dark:hover:text-orange-400 transition-colors whitespace-nowrap flex-shrink-0"
               >
                 Home
               </Link>
               <a
                 href="/dashboard#menu"
                 onClick={handleMenuClick}
-                className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs xl:text-sm font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors whitespace-nowrap flex-shrink-0 cursor-pointer"
+                className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs xl:text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-slate-800 hover:text-orange-600 dark:hover:text-orange-400 transition-colors whitespace-nowrap flex-shrink-0 cursor-pointer"
               >
                 Menu
               </a>
               <Link
                 to="/custom-builder"
-                className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs xl:text-sm font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs xl:text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-slate-800 hover:text-orange-600 dark:hover:text-orange-400 transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
               >
                 <span>Custom Builder 🍕</span>
-                <span className="bg-red-100 text-red-600 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">Hot</span>
+                <span className="bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">Hot</span>
               </Link>
               <Link
                 to="/orders"
-                className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs xl:text-sm font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors whitespace-nowrap flex-shrink-0"
+                className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs xl:text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-slate-800 hover:text-orange-600 dark:hover:text-orange-400 transition-colors whitespace-nowrap flex-shrink-0"
               >
                 My Orders
               </Link>
-              {/* <Link
-                to="/profile"
-                className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs xl:text-sm font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors whitespace-nowrap flex-shrink-0"
-              >
-                Profile
-              </Link> */}
               {user && user.role === 'admin' && (
                 <Link
                   to="/admin/dashboard"
-                  className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs xl:text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 transition-colors whitespace-nowrap flex-shrink-0"
+                  className="px-3 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs xl:text-sm font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 transition-colors whitespace-nowrap flex-shrink-0"
                 >
                   Admin
                 </Link>
@@ -152,10 +151,10 @@ export default function Navbar() {
                   placeholder="Search food, pizzas..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 lg:py-2 bg-slate-100/80 rounded-full text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition-all border border-slate-200/60"
+                  className="w-full pl-8 pr-3 py-1.5 lg:py-2 bg-slate-100/80 dark:bg-slate-950/80 rounded-full text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white dark:focus:bg-slate-900 transition-all border border-slate-200/60 dark:border-slate-800"
                 />
                 <svg
-                  className="absolute left-2.5 top-2.5 w-3 h-3 text-slate-400"
+                  className="absolute left-2.5 top-2.5 w-3 h-3 text-slate-400 dark:text-slate-500"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -163,6 +162,15 @@ export default function Navbar() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </form>
+
+              {/* Theme Toggle Button */}
+              <button
+                onClick={toggleTheme}
+                className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-yellow-400 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-all shadow-sm flex-shrink-0"
+                title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </button>
 
               {/* Notification Bell */}
               <div className="flex-shrink-0">
@@ -172,7 +180,7 @@ export default function Navbar() {
               {/* Cart Button */}
               <Link
                 to="/cart"
-                className="relative w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-orange-50 text-orange-600 hover:bg-orange-100 flex items-center justify-center transition-all shadow-sm group flex-shrink-0"
+                className="relative w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-orange-50 dark:bg-slate-800 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-slate-700 flex items-center justify-center transition-all shadow-sm group flex-shrink-0"
                 title="View Cart"
               >
                 <svg className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

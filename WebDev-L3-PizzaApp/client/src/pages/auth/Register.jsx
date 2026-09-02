@@ -22,7 +22,7 @@ export default function Register() {
 
     try {
       const data = await authService.register({ name, email, password });
-      setMessage(data.data || 'Registration successful! Please check your email to verify your account before logging in.');
+      setMessage(data.data || 'Registration successful! Please login to your account.');
       setLoading(false);
       setTimeout(() => {
         navigate('/login');
