@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import API from '../../services/api';
+import { useGetInventoryQuery } from '../../store/api/inventoryApi';
 import { useCart } from '../../hooks/useCart';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function PizzaBuilder() {
   const [step, setStep] = useState(1); // 1: Base, 2: Sauce, 3: Cheese, 4: Veggies
-  const [ingredients, setIngredients] = useState({
-    base: [],
-    sauce: [],
-    cheese: [],
-    veggie: []
-  });
-  const [loading, setLoading] = useState(true);
+  const { data: inventoryData, isLoading: loading } = useGetInventoryQuery();
   const [notification, setNotification] = useState(null);
 
   // Selection state
@@ -56,61 +50,42 @@ export default function PizzaBuilder() {
     { _id: 'v6', name: 'Sweet Corn', category: 'veggie', price: 1.00, stock: 50 }
   ];
 
+  const items = inventoryData?.data || inventoryData || [];
+  const categorized = {
+    base: items.filter(i => i.category === 'base'),
+    sauce: items.filter(i => i.category === 'sauce'),
+    cheese: items.filter(i => i.category === 'cheese'),
+    veggie: items.filter(i => i.category === 'veggie')
+  };
+
+  if (categorized.base.length === 0) categorized.base = fallbackInventory.filter(i => i.category === 'base');
+  if (categorized.sauce.length === 0) categorized.sauce = fallbackInventory.filter(i => i.category === 'sauce');
+  if (categorized.cheese.length === 0) categorized.cheese = fallbackInventory.filter(i => i.category === 'cheese');
+  if (categorized.veggie.length === 0) categorized.veggie = fallbackInventory.filter(i => i.category === 'veggie');
+
+  const ingredients = categorized;
+
   useEffect(() => {
-    const fetchInventory = async () => {
-      try {
-        const response = await API.get('/inventory');
-        const items = response.data?.data || response.data || [];
-        
-        const categorized = {
-          base: items.filter(i => i.category === 'base'),
-          sauce: items.filter(i => i.category === 'sauce'),
-          cheese: items.filter(i => i.category === 'cheese'),
-          veggie: items.filter(i => i.category === 'veggie')
-        };
+    // Pre-select ingredients if modified from a ready-made pizza
+    const pizzaToModify = location.state?.pizza;
+    if (pizzaToModify && items.length > 0) {
+      const desc = (pizzaToModify.description || '').toLowerCase();
+      const name = (pizzaToModify.name || '').toLowerCase();
+      const combinedText = `${name} ${desc}`;
 
-        // If any category is empty from API, fill with fallback data
-        if (categorized.base.length === 0) categorized.base = fallbackInventory.filter(i => i.category === 'base');
-        if (categorized.sauce.length === 0) categorized.sauce = fallbackInventory.filter(i => i.category === 'sauce');
-        if (categorized.cheese.length === 0) categorized.cheese = fallbackInventory.filter(i => i.category === 'cheese');
-        if (categorized.veggie.length === 0) categorized.veggie = fallbackInventory.filter(i => i.category === 'veggie');
+      const matchedBase = categorized.base.find(b => combinedText.includes(b.name.toLowerCase()));
+      if (matchedBase) setSelectedBase(matchedBase);
 
-        setIngredients(categorized);
+      const matchedSauce = categorized.sauce.find(s => combinedText.includes(s.name.toLowerCase()));
+      if (matchedSauce) setSelectedSauce(matchedSauce);
 
-        // Pre-select ingredients if modified from a ready-made pizza
-        const pizzaToModify = location.state?.pizza;
-        if (pizzaToModify) {
-          const desc = (pizzaToModify.description || '').toLowerCase();
-          const name = (pizzaToModify.name || '').toLowerCase();
-          const combinedText = `${name} ${desc}`;
+      const matchedCheese = categorized.cheese.find(c => combinedText.includes(c.name.toLowerCase()));
+      if (matchedCheese) setSelectedCheese(matchedCheese);
 
-          const matchedBase = categorized.base.find(b => combinedText.includes(b.name.toLowerCase()));
-          if (matchedBase) setSelectedBase(matchedBase);
-
-          const matchedSauce = categorized.sauce.find(s => combinedText.includes(s.name.toLowerCase()));
-          if (matchedSauce) setSelectedSauce(matchedSauce);
-
-          const matchedCheese = categorized.cheese.find(c => combinedText.includes(c.name.toLowerCase()));
-          if (matchedCheese) setSelectedCheese(matchedCheese);
-
-          const matchedVeggies = categorized.veggie.filter(v => combinedText.includes(v.name.toLowerCase()));
-          if (matchedVeggies.length > 0) setSelectedVeggies(matchedVeggies);
-        }
-      } catch (err) {
-        console.error('Failed to fetch inventory, using fallback items:', err);
-        setIngredients({
-          base: fallbackInventory.filter(i => i.category === 'base'),
-          sauce: fallbackInventory.filter(i => i.category === 'sauce'),
-          cheese: fallbackInventory.filter(i => i.category === 'cheese'),
-          veggie: fallbackInventory.filter(i => i.category === 'veggie')
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInventory();
-  }, []);
+      const matchedVeggies = categorized.veggie.filter(v => combinedText.includes(v.name.toLowerCase()));
+      if (matchedVeggies.length > 0) setSelectedVeggies(matchedVeggies);
+    }
+  }, [inventoryData]);
 
   // Calculate real-time price
   const totalPrice = 

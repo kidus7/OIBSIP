@@ -1,33 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import API from '../../services/api';
+import { useGetOrdersQuery } from '../../store/api/orderApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useCart } from '../../hooks/useCart';
 import toast from 'react-hot-toast';
 
 export default function MyOrders() {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: ordersData, isLoading: loading, error: queryError } = useGetOrdersQuery('/orders/my-orders');
+  const orders = ordersData?.data || ordersData || [];
+  const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch order history') : '';
   const { reorder } = useCart();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchMyOrders();
-  }, []);
-
-  const fetchMyOrders = async () => {
-    try {
-      setLoading(true);
-      const res = await API.get('/orders/my-orders');
-      setOrders(res.data.data || res.data || []);
-      setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to fetch order history');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleReorder = (order) => {
     const items = order.pizzas || order.items || [];

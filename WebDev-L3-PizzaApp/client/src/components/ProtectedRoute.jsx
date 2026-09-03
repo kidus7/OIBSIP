@@ -1,17 +1,12 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useSelector } from 'react-redux';
 import LoadingSpinner from './LoadingSpinner';
 
 export default function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
+  const { user, token: storeToken } = useSelector((state) => state.auth);
+  const token = storeToken || localStorage.getItem('token');
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
-  // For scaffolding placeholder, if no user token in localStorage, redirect to login
-  const token = localStorage.getItem('token');
   if (!token) {
     return <Navigate to="/login" replace />;
   }

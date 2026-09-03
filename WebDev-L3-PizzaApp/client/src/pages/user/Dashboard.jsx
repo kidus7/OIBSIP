@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import API from '../../services/api';
+import { useGetInventoryQuery } from '../../store/api/inventoryApi';
 import { useCart } from '../../hooks/useCart';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function Dashboard() {
-  const [pizzas, setPizzas] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: inventoryData, isLoading: loading } = useGetInventoryQuery();
   const [activeTab, setActiveTab] = useState('All');
   const [notification, setNotification] = useState(null);
   const [searchParams] = useSearchParams();
@@ -89,30 +88,12 @@ export default function Dashboard() {
     }
   ];
 
-  useEffect(() => {
-    const fetchPreMadePizzas = async () => {
-      try {
-        const response = await API.get('/inventory');
-        const items = response.data?.data || response.data || [];
-        const preMade = items.filter(item => item.category === 'pre-made');
-        if (preMade.length > 0) {
-          const formatted = preMade.map(item => ({
-            ...item,
-            image: item.imageURL || item.image || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80'
-          }));
-          setPizzas(formatted);
-        } else {
-          setPizzas(fallbackPizzas);
-        }
-      } catch (err) {
-        console.error('Failed to fetch inventory from API, using fallback pizzas:', err);
-        setPizzas(fallbackPizzas);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPreMadePizzas();
-  }, []);
+  const items = inventoryData?.data || inventoryData || [];
+  const preMade = items.filter(item => item.category === 'pre-made');
+  const pizzas = preMade.length > 0 ? preMade.map(item => ({
+    ...item,
+    image: item.imageURL || item.image || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80'
+  })) : fallbackPizzas;
 
   const isVeg = (pizza) => {
     const text = (pizza.name + ' ' + (pizza.description || '')).toLowerCase();

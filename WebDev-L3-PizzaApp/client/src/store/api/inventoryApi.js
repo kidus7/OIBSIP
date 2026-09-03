@@ -14,11 +14,26 @@ export const inventoryApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Inventory'],
     }),
+    updateItem: builder.mutation({
+      query: ({ id, ...patch }) => ({
+        url: `/admin/inventory/${id}`,
+        method: 'PUT',
+        body: patch,
+      }),
+      invalidatesTags: ['Inventory'],
+    }),
     addIngredient: builder.mutation({
       query: (data) => ({
         url: '/admin/inventory',
         method: 'POST',
         body: data,
+      }),
+      invalidatesTags: ['Inventory'],
+    }),
+    deleteItem: builder.mutation({
+      query: (id) => ({
+        url: `/admin/inventory/${id}`,
+        method: 'DELETE',
       }),
       invalidatesTags: ['Inventory'],
     }),
@@ -28,5 +43,7 @@ export const inventoryApi = baseApi.injectEndpoints({
 export const {
   useGetInventoryQuery,
   useUpdateStockMutation,
+  useUpdateItemMutation,
   useAddIngredientMutation,
+  useDeleteItemMutation,
 } = inventoryApi;

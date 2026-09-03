@@ -379,13 +379,27 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Theme Toggle Button in Mobile Drawer */}
-            <button onClick={toggleTheme} className="flex items-center justify-between w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-sm mt-4">
-              <span>{theme === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode'}</span>
-              <span className="text-xs bg-orange-500 text-white px-2 py-0.5 rounded-full">{theme === 'dark' ? 'ON' : 'OFF'}</span>
-            </button>
+            <button
+              onClick={toggleTheme}
+              type="button"
+              className="flex items-center justify-between w-full px-4 py-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-100 font-semibold text-sm transition-all duration-200 border border-slate-200/60 dark:border-slate-700/60"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-base">{theme === 'dark' ? '🌙' : '☀️'}</span>
+                <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
+              </div>
 
-            {/* 3. User Profile Card at bottom */}
+              {/* Custom Animated Switch Track */}
+              <div
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${theme === 'dark' ? 'bg-orange-500' : 'bg-slate-300 dark:bg-slate-600'
+                  }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${theme === 'dark' ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                />
+              </div>
+            </button>
             <div className="pt-2 border-t border-slate-100">
               {user ? (
                 <div className="flex flex-col space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">

@@ -2,6 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import {
+  useGetOrdersQuery,
+  useRespondToAssignmentMutation,
+  useVerifyDeliveryOTPMutation
+} from '../../store/api/orderApi';
 import API from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import NotificationBell from '../../components/NotificationBell';
@@ -10,9 +15,13 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 export default function DriverDashboard() {
   const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: ordersData, isLoading: loading, error: queryError, refetch } = useGetOrdersQuery('/orders/driver/available');
+  const [respondToAssignment] = useRespondToAssignmentMutation();
+  const [verifyDeliveryOTP] = useVerifyDeliveryOTPMutation();
+
+  const orders = ordersData?.data || ordersData || [];
+  const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch driver deliveries') : '';
+
   const [successMsg, setSuccessMsg] = useState('');
   const [activeTab, setActiveTab] = useState('available'); // 'available', 'active', or 'completed'
   const [completingOrderId, setCompletingOrderId] = useState(null);
@@ -31,9 +40,7 @@ export default function DriverDashboard() {
   }, [user]);
 
   useEffect(() => {
-    fetchDriverOrders();
-
-    // Socket.io real-time synchronization replacing interval polling
+    // Socket.io real-time synchronization
     const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:4000';
     const socket = io(socketUrl);
 
@@ -45,17 +52,17 @@ export default function DriverDashboard() {
     });
 
     socket.on('order_updated', () => {
-      fetchDriverOrders(true); // silent re-fetch on order update event
+      refetch();
     });
 
     socket.on('order:claim_resolved', (data) => {
-      fetchDriverOrders(true);
+      refetch();
       toast.success(data.approved ? '🎉 Your order claim was approved by Admin!' : '❌ Your order claim was declined.');
     });
 
     socket.on('order:direct_assignment', (data) => {
       setDirectAssignmentModalData(data);
-      fetchDriverOrders(true);
+      refetch();
     });
 
     return () => {
@@ -65,23 +72,23 @@ export default function DriverDashboard() {
 
   const handleAcceptDirectAssignment = async (orderId) => {
     try {
-      await API.patch(`/driver/orders/${orderId}/assignment-response`, { accept: true });
+      await respondToAssignment({ id: orderId, accept: true }).unwrap();
       setDirectAssignmentModalData(null);
-      fetchDriverOrders(true);
+      refetch();
       toast.success('Accepted direct assignment successfully! 🛵');
     } catch (err) {
-      toast.error(err.response?.data?.error || err.message || 'Failed to accept assignment');
+      toast.error(err.data?.error || err.message || 'Failed to accept assignment');
     }
   };
 
   const handleDeclineDirectAssignment = async (orderId) => {
     try {
-      await API.patch(`/driver/orders/${orderId}/assignment-response`, { accept: false });
+      await respondToAssignment({ id: orderId, accept: false }).unwrap();
       setDirectAssignmentModalData(null);
-      fetchDriverOrders(true);
+      refetch();
       toast.success('Declined job assignment.');
     } catch (err) {
-      toast.error(err.response?.data?.error || err.message || 'Failed to decline assignment');
+      toast.error(err.data?.error || err.message || 'Failed to decline assignment');
     }
   };
 
@@ -110,24 +117,8 @@ export default function DriverDashboard() {
     return name.substring(0, 2).toUpperCase();
   };
 
-  const fetchDriverOrders = async (isPoll = false) => {
-    try {
-      if (!isPoll) setLoading(true);
-      const res = await API.get('/orders/driver/available');
-      setOrders(res.data.data || res.data || []);
-      setError('');
-    } catch (err) {
-      if (!isPoll) {
-        setError(err.response?.data?.error || err.message || 'Failed to fetch driver deliveries');
-      }
-    } finally {
-      if (!isPoll) setLoading(false);
-    }
-  };
-
   const handleToggleStatus = async (newStatus) => {
     try {
-      setError('');
       const res = await API.patch('/driver/status', { isOnline: newStatus });
       const updated = res.data.data || res.data;
       setIsOnline(updated.isOnline);
@@ -136,7 +127,7 @@ export default function DriverDashboard() {
       }
       if (updated.isOnline) {
         toast.success('🟢 Online & Ready for Orders');
-        fetchDriverOrders();
+        refetch();
       } else {
         toast.success('🔴 Offline / On Break');
       }
@@ -151,38 +142,31 @@ export default function DriverDashboard() {
       return;
     }
     try {
-      setError('');
       setSuccessMsg('');
       const res = await API.put(`/orders/${orderId}/claim`);
-      const updated = res.data.data || res.data;
-      setOrders(orders.map(o => o._id === orderId ? updated : o));
+      refetch();
       toast.success(`Successfully accepted Order #${orderId.slice(-6)}! Out for delivery 🛵`);
       setSuccessMsg(`Successfully accepted Order #${orderId.slice(-6)}! Out for delivery 🛵`);
       setActiveTab('active');
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
       const errMsg = err.response?.data?.error || err.message || 'Failed to claim order';
-      setError(errMsg);
       toast.error(errMsg);
     }
   };
 
   const handleCompleteOrderWithCode = async (orderId) => {
     try {
-      setError('');
       setSuccessMsg('');
-      const res = await API.put(`/driver/orders/${orderId}/verify`, { deliveryCode: inputCode });
-      const updated = res.data.data || res.data;
-      setOrders(orders.map(o => o._id === orderId ? updated : o));
+      await verifyDeliveryOTP({ id: orderId, deliveryCode: inputCode }).unwrap();
       toast.success(`Order #${orderId.slice(-6)} marked as Delivered! 🎉`);
       setSuccessMsg(`Order #${orderId.slice(-6)} marked as Delivered! 🎉`);
       setCompletingOrderId(null);
       setInputCode('');
       setTimeout(() => setSuccessMsg(''), 4000);
-      fetchDriverOrders(true);
+      refetch();
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || 'Failed to complete order with delivery code';
-      setError(errMsg);
+      const errMsg = err.data?.error || err.message || 'Failed to complete order with delivery code';
       toast.error(errMsg);
     }
   };

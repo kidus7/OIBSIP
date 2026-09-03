@@ -1,43 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { io } from 'socket.io-client';
-import API from '../../services/api';
+import { useGetOrdersQuery } from '../../store/api/orderApi';
 import MyOrders from './MyOrders';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function OrderTracking() {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: orderData, isLoading: loading, error: queryError } = useGetOrdersQuery(orderId ? `/orders/${orderId}` : '', {
+    skip: !orderId
+  });
+  const order = orderData?.data || orderData;
+  const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch order details') : '';
   const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes default in seconds
-
-  useEffect(() => {
-    if (!orderId) {
-      setLoading(false);
-      return;
-    }
-    fetchOrderDetails();
-
-    // Socket.io real-time synchronization replacing interval polling
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:4000';
-    const socket = io(socketUrl);
-
-    socket.on('connect', () => {
-      socket.emit('join_order', orderId);
-    });
-
-    socket.on('order_updated', (updatedOrder) => {
-      if (!orderId || updatedOrder._id === orderId || updatedOrder.orderId === orderId) {
-        fetchOrderDetails(true); // silent fetch on socket update event
-      }
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [orderId]);
 
   useEffect(() => {
     if (!order) return;
@@ -56,21 +31,6 @@ export default function OrderTracking() {
 
     return () => clearInterval(timer);
   }, [order]);
-
-  const fetchOrderDetails = async (isPoll = false) => {
-    try {
-      if (!isPoll) setLoading(true);
-      const res = await API.get(`/orders/${orderId}`);
-      setOrder(res.data.data || res.data);
-      setError('');
-    } catch (err) {
-      if (!isPoll) {
-        setError(err.response?.data?.error || err.message || 'Failed to fetch order details');
-      }
-    } finally {
-      if (!isPoll) setLoading(false);
-    }
-  };
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);

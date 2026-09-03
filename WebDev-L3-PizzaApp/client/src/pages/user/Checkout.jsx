@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../hooks/useCart';
 import { useAuth } from '../../hooks/useAuth';
+import { useCreateOrderMutation } from '../../store/api/orderApi';
 import API from '../../services/api';
 
 export default function Checkout() {
   const { cart, getCartTotal, clearCart } = useCart();
   const { user: reqUser } = useAuth();
+  const [createOrder] = useCreateOrderMutation();
   const navigate = useNavigate();
 
   const [street, setStreet] = useState('');
@@ -57,13 +59,20 @@ export default function Checkout() {
     try {
       const deliveryAddress = { street, city, postalCode, phone };
 
-      const res = await API.post('/orders/create-razorpay-order', {
-        subtotal: grandTotal
-      });
-      const data = res.data.data || res.data;
+      const res = await createOrder({
+        totalPrice: grandTotal,
+        deliveryAddress,
+        pizzas: cart
+      }).unwrap();
+      
+      const data = {
+        amount: res.amount,
+        currency: res.currency || 'INR',
+        id: res.order_id || res.orderId || res.order?._id
+      };
       
       const options = {
-        key: res.data.key_id || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mockkey',
+        key: res.key_id || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mockkey',
         amount: data.amount,
         currency: data.currency,
         name: 'SliceMasters PizzaApp',
@@ -82,7 +91,7 @@ export default function Checkout() {
             });
             if (verifyRes.data.message === 'Payment verified successfully') {
               clearCart();
-              const targetId = verifyRes.data.order?._id || verifyRes.data.order?.id || data.id;
+              const targetId = verifyRes.data.order?._id || verifyRes.data.order?.id || res.orderId || data.id;
               navigate(`/order-tracking/${targetId}`);
             }
           } catch (err) {
@@ -102,7 +111,7 @@ export default function Checkout() {
       rzp.open();
     } catch (err) {
       console.error('Checkout error:', err);
-      setError(err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to complete checkout process.');
+      setError(err.data?.error || err.data?.message || err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to complete checkout process.');
       setLoading(false);
     }
   };

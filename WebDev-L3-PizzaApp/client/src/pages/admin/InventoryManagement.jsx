@@ -1,12 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { inventoryService } from '../../services/inventoryService';
+import {
+  useGetInventoryQuery,
+  useUpdateItemMutation,
+  useAddIngredientMutation,
+  useDeleteItemMutation
+} from '../../store/api/inventoryApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function InventoryManagement() {
-  const [inventory, setInventory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: inventoryData, isLoading: loading, error: queryError } = useGetInventoryQuery();
+  const [updateItemMutation] = useUpdateItemMutation();
+  const [addIngredientMutation] = useAddIngredientMutation();
+  const [deleteItemMutation] = useDeleteItemMutation();
+
+  const inventory = inventoryData?.data || inventoryData || [];
+  const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch inventory') : '';
+
   const [successMessage, setSuccessMessage] = useState('');
 
   // Selected category sub-filter tab
@@ -30,22 +40,6 @@ export default function InventoryManagement() {
     unit: 'units'
   });
 
-  useEffect(() => {
-    fetchInventory();
-  }, []);
-
-  const fetchInventory = async () => {
-    try {
-      setLoading(true);
-      const res = await inventoryService.getInventory();
-      setInventory(res.data || []);
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to fetch inventory');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleStartEdit = (item) => {
     setEditingId(item._id);
     setEditStock(item.stock ?? 0);
@@ -64,32 +58,29 @@ export default function InventoryManagement() {
 
   const handleSaveUpdate = async (id) => {
     try {
-      setError('');
       setSuccessMessage('');
       const updatedData = {
+        id,
         stock: Number(editStock),
         price: Number(editPrice),
         minThreshold: Number(editMinThreshold),
         inStock: Boolean(editInStock)
       };
 
-      const res = await inventoryService.updateItem(id, updatedData);
-      setInventory(inventory.map(item => item._id === id ? res.data : item));
+      await updateItemMutation(updatedData).unwrap();
       setSuccessMessage('Inventory item updated successfully!');
       setEditingId(null);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to update item');
+      console.error('Failed to update item', err);
     }
   };
 
   const handleAddItem = async (e) => {
     e.preventDefault();
     try {
-      setError('');
       setSuccessMessage('');
-      const res = await inventoryService.addItem(newItem);
-      setInventory([...inventory, res.data]);
+      await addIngredientMutation(newItem).unwrap();
       setSuccessMessage('New ingredient added successfully!');
       setShowAddModal(false);
       setNewItem({
@@ -102,20 +93,18 @@ export default function InventoryManagement() {
       });
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to add ingredient');
+      console.error('Failed to add ingredient', err);
     }
   };
 
   const handleDeleteItem = async (id) => {
     if (!window.confirm('Are you sure you want to delete this inventory item?')) return;
     try {
-      setError('');
-      await inventoryService.deleteItem(id);
-      setInventory(inventory.filter(item => item._id !== id));
+      await deleteItemMutation(id).unwrap();
       setSuccessMessage('Item deleted successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to delete item');
+      console.error('Failed to delete item', err);
     }
   };
 

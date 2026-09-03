@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { userService } from '../../services/userService';
+import { useVerifyDriverMutation } from '../../store/api/authApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
@@ -9,6 +10,7 @@ export default function DriversManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [verifyDriverMutation] = useVerifyDriverMutation();
 
   // Modal State for Create / Edit
   const [showModal, setShowModal] = useState(false);
@@ -99,12 +101,11 @@ export default function DriversManagement() {
   const handleVerifyDriver = async (id) => {
     try {
       setError('');
-      const res = await userService.verifyDriver(id);
-      setDrivers(drivers.map(d => d._id === id ? (res.data || res) : d));
+      await verifyDriverMutation(id).unwrap();
       toast.success('Driver verified successfully! 🛡️');
       fetchDrivers();
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || 'Failed to verify driver';
+      const errMsg = err.data?.error || err.message || 'Failed to verify driver';
       setError(errMsg);
       toast.error(errMsg);
     }

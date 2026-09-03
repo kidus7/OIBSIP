@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { useSelector } from 'react-redux';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -39,7 +40,6 @@ import DriversManagement from './pages/admin/DriversManagement';
 
 // Driver Protected Pages
 import DriverDashboard from './pages/driver/DriverDashboard';
-import { useAuth } from './hooks/useAuth';
 
 // Helper to resolve landing page based on user role
 function getRoleBasedPath(user) {
@@ -50,11 +50,7 @@ function getRoleBasedPath(user) {
 }
 
 function AuthRedirect({ children, redirectWhenAuthenticated = false }) {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  const { user } = useSelector((state) => state.auth);
 
   if (redirectWhenAuthenticated && user) {
     return <Navigate replace to={getRoleBasedPath(user)} />;
@@ -64,17 +60,13 @@ function AuthRedirect({ children, redirectWhenAuthenticated = false }) {
 }
 
 function RootRedirect() {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  const { user } = useSelector((state) => state.auth);
 
   return <Navigate replace to={getRoleBasedPath(user)} />;
 }
 
 function AppLayout() {
-  const { user } = useAuth();
+  const { user } = useSelector((state) => state.auth);
   const location = useLocation();
 
   // Determine if current route is an Admin or Driver view
@@ -141,12 +133,6 @@ function AppLayout() {
 }
 
 function AppContent() {
-  const { loading } = useAuth();
-
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
   return (
     <Router>
       <AppLayout />

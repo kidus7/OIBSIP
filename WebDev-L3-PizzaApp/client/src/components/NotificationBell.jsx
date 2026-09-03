@@ -1,8 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNotifications } from '../context/NotificationContext';
+import { useDispatch } from 'react-redux';
+import { markAllAsRead } from '../store/slices/notificationSlice';
+import {
+  useGetNotificationsQuery,
+  useMarkNotificationReadMutation,
+  useClearNotificationsMutation
+} from '../store/api/notificationApi';
 
 export default function NotificationBell() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useNotifications();
+  const { data: notificationsData } = useGetNotificationsQuery();
+  const notifications = notificationsData || [];
+  const unreadCount = notifications.filter(n => !n.read).length;
+  const [markNotificationRead] = useMarkNotificationReadMutation();
+  const [clearNotifications] = useClearNotificationsMutation();
+  const dispatch = useDispatch();
+
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -85,7 +97,7 @@ export default function NotificationBell() {
             <div className="flex items-center space-x-2">
               {unreadCount > 0 && (
                 <button
-                  onClick={markAllAsRead}
+                  onClick={() => dispatch(markAllAsRead())}
                   className="text-[11px] bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded-lg transition font-medium cursor-pointer"
                 >
                   Mark all read
@@ -93,7 +105,7 @@ export default function NotificationBell() {
               )}
               {notifications.length > 0 && (
                 <button
-                  onClick={clearAll}
+                  onClick={() => clearNotifications()}
                   className="text-[11px] bg-red-800/40 hover:bg-red-800/60 text-white px-2 py-1 rounded-lg transition font-medium cursor-pointer"
                 >
                   Clear
@@ -114,7 +126,7 @@ export default function NotificationBell() {
               notifications.map((notif) => (
                 <div
                   key={notif.id}
-                  onClick={() => !notif.read && markAsRead(notif.id)}
+                  onClick={() => !notif.read && markNotificationRead(notif.id)}
                   className={`p-3.5 transition flex items-start space-x-3 cursor-pointer ${
                     notif.read ? 'bg-white opacity-85' : 'bg-orange-50/60 hover:bg-orange-50 border-l-4 border-orange-500'
                   }`}

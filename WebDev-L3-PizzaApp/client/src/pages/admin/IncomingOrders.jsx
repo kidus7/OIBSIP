@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import AdminLayout from '../../components/AdminLayout';
+import { useGetOrdersQuery, useUpdateOrderStatusMutation, useAssignDriverMutation } from '../../store/api/orderApi';
 import API from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -11,9 +12,13 @@ const ChevronDown = ({ className }) => (
 );
 
 export default function IncomingOrders() {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: ordersData, isLoading: loading, error: queryError, refetch } = useGetOrdersQuery();
+  const [updateOrderStatus] = useUpdateOrderStatusMutation();
+  const [assignDriverMutation] = useAssignDriverMutation();
+
+  const orders = ordersData?.data || ordersData || [];
+  const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch incoming orders') : '';
+
   const [successMessage, setSuccessMessage] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -23,7 +28,6 @@ export default function IncomingOrders() {
   const [onlineDrivers, setOnlineDrivers] = useState([]);
 
   useEffect(() => {
-    fetchOrders();
     fetchOnlineDrivers();
 
     // Socket.io real-time synchronization
@@ -35,7 +39,7 @@ export default function IncomingOrders() {
     });
 
     socket.on('order_updated', () => {
-      fetchOrders(); // Instant re-fetch on any order update
+      refetch();
     });
 
     socket.on('admin:claim_notification', (data) => {
@@ -48,7 +52,7 @@ export default function IncomingOrders() {
 
     socket.on('order:claim_resolved', () => {
       setIncomingClaim(null);
-      fetchOrders();
+      refetch();
     });
 
     return () => {
@@ -68,45 +72,25 @@ export default function IncomingOrders() {
 
   const handleClaimApproval = async (orderId, approved, driverId) => {
     try {
-      setError('');
-      setSuccessMessage('');
       await API.patch(`/admin/orders/${orderId}/claim-approval`, { approved, driverId });
       setIncomingClaim(null);
-      fetchOrders();
+      refetch();
       setSuccessMessage(`Driver claim ${approved ? 'approved & dispatched 🚀' : 'declined ❌'} successfully!`);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to process claim approval');
+      console.error('Failed to process claim approval', err);
     }
   };
 
   const handleAssignDriverSubmit = async (orderId, driverId) => {
     try {
-      setError('');
-      setSuccessMessage('');
-      await API.patch(`/admin/orders/${orderId}/assign-driver`, { driverId });
+      await assignDriverMutation({ id: orderId, driverId }).unwrap();
       setAssignModalOrder(null);
-      fetchOrders();
+      refetch();
       setSuccessMessage(`Driver assigned successfully!`);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to assign driver');
-    }
-  };
-
-  const fetchOrders = async () => {
-    try {
-      setLoading(false); // don't flash full screen loader on silent updates
-      const res = await API.get('/orders');
-      const rawOrders = res.data.data || res.data || [];
-      // Sort orders by newest date first (createdAt descending)
-      const sorted = [...rawOrders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setOrders(sorted);
-      setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to fetch incoming orders');
-    } finally {
-      setLoading(false);
+      console.error('Failed to assign driver', err);
     }
   };
 
@@ -116,29 +100,22 @@ export default function IncomingOrders() {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      setError('');
-      setSuccessMessage('');
-      const res = await API.put(`/orders/${orderId}/status`, { status: newStatus });
-      const updatedOrder = res.data.data || res.data;
-      setOrders(orders.map(order => (order._id === orderId ? updatedOrder : order)));
-      setSuccessMessage(`Order #${orderId.slice(-6)} status updated to ${newStatus} successfully!`);
+      await updateOrderStatus({ id: orderId, status: newStatus }).unwrap();
+      setSuccessMessage(`Order status updated to ${newStatus} successfully!`);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to update order status');
+      console.error('Failed to update order status', err);
     }
   };
 
   const handleUpdateETA = async (orderId, minutes) => {
     try {
-      setError('');
-      setSuccessMessage('');
-      const res = await API.put(`/orders/${orderId}/eta`, { estimatedMinutes: minutes });
-      const updatedOrder = res.data.data || res.data;
-      setOrders(orders.map(order => (order._id === orderId ? updatedOrder : order)));
-      setSuccessMessage(`Order #${orderId.slice(-6)} ETA updated successfully!`);
+      await API.put(`/orders/${orderId}/eta`, { estimatedMinutes: minutes });
+      refetch();
+      setSuccessMessage(`Order ETA updated successfully!`);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to update order ETA');
+      console.error('Failed to update order ETA', err);
     }
   };
 
