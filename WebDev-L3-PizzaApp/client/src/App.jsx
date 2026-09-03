@@ -35,9 +35,11 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import InventoryManagement from './pages/admin/InventoryManagement';
 import IncomingOrders from './pages/admin/IncomingOrders';
 import DriversManagement from './pages/admin/DriversManagement';
+import AdminProfile from './pages/admin/AdminProfile';
 
 // Driver Protected Pages
 import DriverDashboard from './pages/driver/DriverDashboard';
+import DriverProfile from './pages/driver/DriverProfile';
 
 // Helper to resolve landing page based on user role
 function getRoleBasedPath(user) {
@@ -112,9 +114,11 @@ function AppLayout() {
           <Route path="/admin/inventory" element={<AdminRoute><InventoryManagement /></AdminRoute>} />
           <Route path="/admin/orders" element={<AdminRoute><IncomingOrders /></AdminRoute>} />
           <Route path="/admin/drivers" element={<AdminRoute><DriversManagement /></AdminRoute>} />
+          <Route path="/admin/profile" element={<AdminRoute><AdminProfile /></AdminRoute>} />
 
           {/* Driver Protected Routes */}
           <Route path="/driver/dashboard" element={<DriverRoute><DriverDashboard /></DriverRoute>} />
+          <Route path="/driver/profile" element={<DriverRoute><DriverProfile /></DriverRoute>} />
 
           {/* Default Root Redirect */}
           <Route path="/" element={<RootRedirect />} />

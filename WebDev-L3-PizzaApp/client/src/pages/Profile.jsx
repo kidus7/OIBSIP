@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useUpdateProfileMutation } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import toast from 'react-hot-toast';
-import { User, Mail, Phone, Car, Lock, Shield, Settings, Save, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Phone, Lock, Shield, Settings, Save } from 'lucide-react';
 
 export default function Profile() {
   const dispatch = useDispatch();
@@ -13,7 +13,6 @@ export default function Profile() {
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [vehicleDetails, setVehicleDetails] = useState(user?.vehicleDetails || '');
   const [notifications, setNotifications] = useState(user?.preferences?.notifications ?? true);
   const [theme, setTheme] = useState(user?.preferences?.theme || 'dark');
   
@@ -39,7 +38,6 @@ export default function Profile() {
         name,
         email,
         phone,
-        vehicleDetails: user?.role === 'driver' ? vehicleDetails : undefined,
         preferences: {
           notifications,
           theme
@@ -66,10 +64,10 @@ export default function Profile() {
         <div>
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold uppercase tracking-wider mb-2">
             <Shield className="w-3.5 h-3.5" />
-            <span>{user?.role?.toUpperCase()} ACCOUNT</span>
+            <span>CUSTOMER ACCOUNT</span>
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">Account & Profile Settings</h1>
-          <p className="text-slate-400 text-sm mt-1">Manage your personal information, security, and role preferences.</p>
+          <p className="text-slate-400 text-sm mt-1">Manage your personal information, security, and display preferences.</p>
         </div>
       </div>
 
@@ -136,24 +134,6 @@ export default function Profile() {
                 />
               </div>
             </div>
-
-            {user?.role === 'driver' && (
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2">Vehicle Details</label>
-                <div className="relative bg-slate-950 border border-slate-800 focus-within:border-red-500 rounded-xl transition-all">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                    <Car className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="text"
-                    value={vehicleDetails}
-                    onChange={(e) => setVehicleDetails(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-transparent text-white text-sm focus:outline-none placeholder-slate-600"
-                    placeholder="e.g. Honda Civic - ABC 1234"
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -254,7 +234,7 @@ export default function Profile() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold py-3.5 px-8 rounded-xl shadow-lg shadow-red-500/20 active:scale-95 transition-all flex items-center space-x-2 disabled:opacity-50"
+            className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white font-semibold py-3.5 px-8 rounded-xl shadow-lg shadow-red-500/20 active:scale-95 transition-all flex items-center space-x-2 disabled:opacity-50 cursor-pointer"
           >
             <Save className="w-5 h-5" />
             <span>{loading ? 'Saving Changes...' : 'Save Profile Changes'}</span>

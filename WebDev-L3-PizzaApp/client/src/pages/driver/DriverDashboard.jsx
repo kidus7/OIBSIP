@@ -251,7 +251,7 @@ export default function DriverDashboard() {
                   <button
                     onClick={() => {
                       setDropdownOpen(false);
-                      navigate('/profile');
+                      navigate('/driver/profile');
                     }}
                     className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-slate-800 hover:text-orange-600 transition-colors text-left cursor-pointer"
                   >
