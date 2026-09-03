@@ -144,6 +144,7 @@ const seedData = async () => {
         name: 'Mignot Driver',
         email: 'driver@pizza.com',
         password: defaultPassword,
+        phone: '+251912345678',
         role: 'driver',
         isVerified: true,
         isActive: true
