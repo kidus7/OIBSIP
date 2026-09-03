@@ -105,7 +105,7 @@ exports.login = async (req, res, next) => {
     }
 
     if (!user.isVerified) {
-      return res.status(401).json({ success: false, error: 'Please verify your email first' });
+      return res.status(401).json({ success: false, error: 'Please verify the user first' });
     }
 
     sendTokenResponse(user, 200, res);

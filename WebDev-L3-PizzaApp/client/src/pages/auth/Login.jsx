@@ -10,8 +10,6 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
 
   const [loginMutation, { isLoading: loading }] = useLoginMutation();
   const dispatch = useDispatch();
@@ -19,15 +17,12 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
 
     try {
       const data = await loginMutation({ email, password }).unwrap();
 
       dispatch(setCredentials({ user: data.user, token: data.token }));
 
-      setMessage('Login successful! Redirecting...');
       toast.success('Login successful!');
       setTimeout(() => {
         if (data.user.role === 'driver') {
@@ -39,9 +34,9 @@ export default function Login() {
         }
       }, 800);
     } catch (err) {
-      const errMsg = err.data?.error || err.data?.message || err.message || 'Invalid email or password';
-      setError(errMsg);
-      toast.error(errMsg);
+      const errorMessage = err?.data?.message || err?.data?.error || err.message || 'Authentication failed. Please check your credentials.';
+      toast.error(errorMessage, { duration: 4000 });
+      setPassword('');
     }
   };
 
@@ -99,20 +94,6 @@ export default function Login() {
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">Sign In to Your Account</h2>
             <p className="text-slate-400 text-sm">Enter your credentials to access your orders and pizza builder.</p>
           </div>
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-950/50 border border-red-800/80 text-red-300 rounded-xl text-sm flex items-center space-x-3 shadow-lg">
-              <span className="w-1.5 h-6 bg-red-500 rounded-full"></span>
-              <span>{error}</span>
-            </div>
-          )}
-
-          {message && (
-            <div className="mb-4 p-3 bg-emerald-950/50 border border-emerald-800/80 text-emerald-300 rounded-xl text-sm flex items-center space-x-3 shadow-lg">
-              <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
-              <span>{message}</span>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <div>

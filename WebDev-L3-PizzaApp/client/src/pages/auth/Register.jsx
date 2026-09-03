@@ -9,29 +9,24 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
 
   const [registerMutation, { isLoading: loading }] = useRegisterMutation();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
 
     try {
       const data = await registerMutation({ name, email, password }).unwrap();
       const msg = data.data || data.message || 'Registration successful! Please login to your account.';
-      setMessage(msg);
-      toast.success(msg);
+      toast.success(msg, { duration: 4000 });
       setTimeout(() => {
         navigate('/login');
-      }, 3000);
+      }, 2000);
     } catch (err) {
-      const errMsg = err.data?.error || err.data?.message || err.message || 'Registration failed';
-      setError(errMsg);
-      toast.error(errMsg);
+      const errMsg = err?.data?.message || err?.data?.error || err.message || 'Registration failed';
+      toast.error(errMsg, { duration: 4000 });
+      setPassword('');
     }
   };
 
@@ -89,20 +84,6 @@ export default function Register() {
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">Create an Account</h2>
             <p className="text-slate-400 text-sm">Sign up in seconds to start ordering gourmet pizzas.</p>
           </div>
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-950/50 border border-red-800/80 text-red-300 rounded-xl text-sm flex items-center space-x-3 shadow-lg">
-              <span className="w-1.5 h-6 bg-red-500 rounded-full"></span>
-              <span>{error}</span>
-            </div>
-          )}
-
-          {message && (
-            <div className="mb-4 p-3 bg-emerald-950/50 border border-emerald-800/80 text-emerald-300 rounded-xl text-sm flex items-center space-x-3 shadow-lg">
-              <span className="w-1.5 h-6 bg-emerald-500 rounded-full"></span>
-              <span>{message}</span>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <div>

@@ -28,6 +28,12 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
     }
 
     const status = result.error.status;
+    const url = typeof args === 'string' ? args : args?.url || '';
+    const isAuthEndpoint = url.includes('login') || url.includes('register') || url.includes('admin-login') || url.includes('admin-register') || url.includes('/auth/');
+
+    if (isAuthEndpoint) {
+      return result;
+    }
 
     if (status === 401) {
       api.dispatch(logout());

@@ -13,8 +13,6 @@ export default function AdminRegister() {
   const [adminSecret, setAdminSecret] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
 
   const [adminRegisterMutation, { isLoading: loading }] = useAdminRegisterMutation();
   const dispatch = useDispatch();
@@ -22,29 +20,29 @@ export default function AdminRegister() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
 
     try {
       const data = await adminRegisterMutation({ name, email, password, adminSecret }).unwrap();
 
       if (data.user.role !== 'admin') {
-        setError('Access denied. Administrator privileges required.');
-        toast.error('Access denied. Administrator privileges required.');
+        const errMsg = 'Access denied. Administrator privileges required.';
+        toast.error(errMsg, { duration: 4000 });
+        setPassword('');
+        setAdminSecret('');
         return;
       }
 
       dispatch(setCredentials({ user: data.user, token: data.token }));
 
-      setMessage('Admin registration successful! Redirecting...');
-      toast.success('Admin registration successful!');
+      toast.success('Admin registration successful!', { duration: 4000 });
       setTimeout(() => {
         navigate('/admin/dashboard');
       }, 1000);
     } catch (err) {
-      const errMsg = err.data?.error || err.data?.message || err.message || 'Admin registration failed';
-      setError(errMsg);
-      toast.error(errMsg);
+      const errMsg = err?.data?.error || err?.data?.message || err.message || 'Admin registration failed';
+      toast.error(errMsg, { duration: 4000 });
+      setPassword('');
+      setAdminSecret('');
     }
   };
 
@@ -109,20 +107,6 @@ export default function AdminRegister() {
               <h2 className="text-2xl font-black text-white mb-1">Admin Portal Registration</h2>
               <p className="text-slate-400 text-sm">Provide your details and the security passkey to register.</p>
             </div>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-950/60 border border-red-800/80 text-red-300 rounded-xl text-xs flex items-center gap-2">
-                <span className="w-1.5 h-4 bg-red-500 rounded-full shrink-0"></span>
-                <span>{error}</span>
-              </div>
-            )}
-
-            {message && (
-              <div className="mb-4 p-3 bg-emerald-950/60 border border-emerald-800/80 text-emerald-300 rounded-xl text-xs flex items-center gap-2">
-                <span className="w-1.5 h-4 bg-emerald-500 rounded-full shrink-0"></span>
-                <span>{message}</span>
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <div>

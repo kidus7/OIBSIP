@@ -10,8 +10,6 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
 
   const [adminLoginMutation, { isLoading: loading }] = useAdminLoginMutation();
   const dispatch = useDispatch();
@@ -19,29 +17,27 @@ export default function AdminLogin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
 
     try {
       const data = await adminLoginMutation({ email, password }).unwrap();
       
       if (data.user.role !== 'admin') {
-        setError('Access denied. Administrator privileges required.');
-        toast.error('Access denied. Administrator privileges required.');
+        const errMsg = 'Access denied. Administrator privileges required.';
+        toast.error(errMsg, { duration: 4000 });
+        setPassword('');
         return;
       }
 
       dispatch(setCredentials({ user: data.user, token: data.token }));
 
-      setMessage('Admin login successful! Redirecting...');
-      toast.success('Admin login successful!');
+      toast.success('Admin login successful!', { duration: 4000 });
       setTimeout(() => {
         navigate('/admin/dashboard');
       }, 1000);
     } catch (err) {
-      const errMsg = err.data?.error || err.data?.message || err.message || 'Invalid admin credentials';
-      setError(errMsg);
-      toast.error(errMsg);
+      const errMsg = err?.data?.error || err?.data?.message || err.message || 'Invalid admin credentials';
+      toast.error(errMsg, { duration: 4000 });
+      setPassword('');
     }
   };
 
@@ -106,20 +102,6 @@ export default function AdminLogin() {
               <h2 className="text-2xl font-black text-white mb-1">Admin Portal Sign In</h2>
               <p className="text-slate-400 text-sm">Enter authorization credentials to access management controls.</p>
             </div>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-950/60 border border-red-800/80 text-red-300 rounded-xl text-xs flex items-center gap-2">
-                <span className="w-1.5 h-4 bg-red-500 rounded-full shrink-0"></span>
-                <span>{error}</span>
-              </div>
-            )}
-
-            {message && (
-              <div className="mb-4 p-3 bg-emerald-950/60 border border-emerald-800/80 text-emerald-300 rounded-xl text-xs flex items-center gap-2">
-                <span className="w-1.5 h-4 bg-emerald-500 rounded-full shrink-0"></span>
-                <span>{message}</span>
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <div>
