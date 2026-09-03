@@ -143,6 +143,15 @@ function AppContent() {
 }
 
 export default function App() {
+  React.useEffect(() => {
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    if (currentTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   return (
     <CartProvider>
       <AppContent />

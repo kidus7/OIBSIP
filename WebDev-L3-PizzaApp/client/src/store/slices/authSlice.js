@@ -40,6 +40,7 @@ const getInitialUser = () => {
 const initialState = {
   user: getInitialUser(),
   token: getInitialToken(),
+  theme: localStorage.getItem('theme') || 'light',
 };
 
 export const authSlice = createSlice({
@@ -67,8 +68,28 @@ export const authSlice = createSlice({
       localStorage.removeItem('user');
       localStorage.removeItem('role');
     },
+    setTheme: (state, action) => {
+      const newTheme = action.payload; // 'light' or 'dark'
+      state.theme = newTheme;
+      localStorage.setItem('theme', newTheme);
+      if (newTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    },
+    toggleTheme: (state) => {
+      const nextTheme = state.theme === 'dark' ? 'light' : 'dark';
+      state.theme = nextTheme;
+      localStorage.setItem('theme', nextTheme);
+      if (nextTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    },
   },
 });
 
-export const { setCredentials, logout } = authSlice.actions;
+export const { setCredentials, logout, setTheme, toggleTheme } = authSlice.actions;
 export default authSlice.reducer;

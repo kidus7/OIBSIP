@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useUpdateProfileMutation } from '../store/api/authApi';
-import { setCredentials } from '../store/slices/authSlice';
+import { setCredentials, setTheme as setReduxTheme } from '../store/slices/authSlice';
 import toast from 'react-hot-toast';
 import { User, Mail, Phone, Lock, Shield, Settings, Save } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export default function Profile() {
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [notifications, setNotifications] = useState(user?.preferences?.notifications ?? true);
-  const [theme, setTheme] = useState(user?.preferences?.theme || 'dark');
+  const [theme, setTheme] = useState(user?.preferences?.theme || localStorage.getItem('theme') || 'light');
   
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -48,6 +48,7 @@ export default function Profile() {
 
       const response = await updateProfileMutation(payload).unwrap();
       dispatch(setCredentials({ user: response.data, token }));
+      dispatch(setReduxTheme(theme));
       toast.success('Profile updated successfully!');
       
       setCurrentPassword('');
@@ -173,8 +174,8 @@ export default function Profile() {
                 onChange={(e) => setTheme(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-950 border border-slate-800 focus:border-red-500 rounded-xl text-white text-sm focus:outline-none"
               >
-                <option value="dark">Dark Mode (Default)</option>
-                <option value="light">Light Mode</option>
+                <option value="light">Light Mode (Default)</option>
+                <option value="dark">Dark Mode</option>
                 <option value="system">System Default</option>
               </select>
             </div>

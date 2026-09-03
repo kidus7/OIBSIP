@@ -1,19 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../store/slices/authSlice';
+import { logout, toggleTheme } from '../store/slices/authSlice';
 import { useCart } from '../hooks/useCart';
 import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const { cart } = useCart();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const [theme, setThemeState] = useState(() => localStorage.getItem('theme') || 'light');
-  const setTheme = (newTheme) => {
-    setThemeState(newTheme);
-    localStorage.setItem('theme', newTheme);
-  };
+  const { user, theme } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -21,9 +16,8 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef(null);
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
+  const handleToggleTheme = () => {
+    dispatch(toggleTheme());
   };
 
   useEffect(() => {
@@ -172,7 +166,7 @@ export default function Navbar() {
 
               {/* Theme Toggle Button */}
               <button
-                onClick={toggleTheme}
+                onClick={handleToggleTheme}
                 className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-yellow-400 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-all shadow-sm flex-shrink-0"
                 title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
@@ -375,19 +369,10 @@ export default function Navbar() {
               >
                 Profile Settings
               </Link>
-              {user && user.role === 'admin' && (
-                <Link
-                  to="/admin/dashboard"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block w-full px-4 py-3 rounded-2xl text-sm font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/50"
-                >
-                  Admin Dashboard
-                </Link>
-              )}
             </div>
 
             <button
-              onClick={toggleTheme}
+              onClick={handleToggleTheme}
               type="button"
               className="flex items-center justify-between w-full px-4 py-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-100 font-semibold text-sm transition-all duration-200 border border-slate-200/60 dark:border-slate-700/60"
             >
