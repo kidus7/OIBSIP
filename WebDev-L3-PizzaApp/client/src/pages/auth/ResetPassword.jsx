@@ -1,39 +1,42 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { authService } from '../../services/authService';
+import { useResetPasswordMutation } from '../../store/api/authApi';
 import { Lock, ArrowRight, ShieldAlert } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function ResetPassword() {
   const { id, token } = useParams();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
+  const [resetPasswordMutation, { isLoading: loading }] = useResetPasswordMutation();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       setError('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
 
-    setLoading(true);
     setError('');
     setMessage('');
 
     try {
-      const data = await authService.resetPassword(id, token, password);
-      setMessage(data.message || 'Password successfully updated! Redirecting to login...');
-      setLoading(false);
+      const data = await resetPasswordMutation({ id, token, password }).unwrap();
+      const msg = data.message || 'Password successfully updated! Redirecting to login...';
+      setMessage(msg);
+      toast.success(msg);
       setTimeout(() => {
         navigate('/login');
       }, 2500);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to reset password');
-      setLoading(false);
+      const errMsg = err.data?.error || err.data?.message || err.message || 'Failed to reset password';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 

@@ -1,16 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AdminLayout from '../../components/AdminLayout';
-import { userService } from '../../services/userService';
-import { useVerifyDriverMutation } from '../../store/api/authApi';
+import {
+  useGetDriversQuery,
+  useCreateDriverMutation,
+  useUpdateDriverMutation,
+  useToggleDriverStatusMutation,
+  useVerifyDriverMutation,
+  useDeleteDriverMutation
+} from '../../store/api/authApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 export default function DriversManagement() {
-  const [drivers, setDrivers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: driversData, isLoading: loading, error: queryError, refetch } = useGetDriversQuery();
+  const drivers = driversData?.data || driversData || [];
+  const queryErrorMsg = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch drivers') : '';
+
+  const [createDriver] = useCreateDriverMutation();
+  const [updateDriver] = useUpdateDriverMutation();
+  const [toggleDriverStatus] = useToggleDriverStatusMutation();
+  const [verifyDriverMutation] = useVerifyDriverMutation();
+  const [deleteDriver] = useDeleteDriverMutation();
+
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [verifyDriverMutation] = useVerifyDriverMutation();
 
   // Modal State for Create / Edit
   const [showModal, setShowModal] = useState(false);
@@ -22,22 +35,6 @@ export default function DriversManagement() {
     phone: '',
     password: ''
   });
-
-  useEffect(() => {
-    fetchDrivers();
-  }, []);
-
-  const fetchDrivers = async () => {
-    try {
-      setLoading(true);
-      const res = await userService.getDrivers();
-      setDrivers(res.data || []);
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to fetch drivers');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleOpenCreateModal = () => {
     setIsEditing(false);
@@ -64,20 +61,19 @@ export default function DriversManagement() {
       setError('');
       setSuccessMessage('');
       if (isEditing) {
-        const res = await userService.updateDriver(currentDriverId, formData);
-        setDrivers(drivers.map(d => d._id === currentDriverId ? res.data : d));
+        await updateDriver({ id: currentDriverId, ...formData }).unwrap();
         setSuccessMessage('Driver profile updated successfully!');
         toast.success('Driver profile updated successfully!');
       } else {
-        const res = await userService.createDriver(formData);
-        setDrivers([...drivers, res.data]);
+        await createDriver(formData).unwrap();
         setSuccessMessage('Driver account created successfully!');
         toast.success('Driver account created successfully!');
       }
       setShowModal(false);
+      refetch();
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || 'Failed to save driver profile';
+      const errMsg = err.data?.error || err.data?.message || err.message || 'Failed to save driver profile';
       setError(errMsg);
       toast.error(errMsg);
     }
@@ -86,13 +82,13 @@ export default function DriversManagement() {
   const handleToggleStatus = async (id) => {
     try {
       setError('');
-      const res = await userService.toggleDriverStatus(id);
-      setDrivers(drivers.map(d => d._id === id ? res.data : d));
+      await toggleDriverStatus(id).unwrap();
       setSuccessMessage('Driver status updated!');
       toast.success('Driver status updated!');
+      refetch();
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || 'Failed to toggle status';
+      const errMsg = err.data?.error || err.data?.message || err.message || 'Failed to toggle status';
       setError(errMsg);
       toast.error(errMsg);
     }
@@ -103,9 +99,9 @@ export default function DriversManagement() {
       setError('');
       await verifyDriverMutation(id).unwrap();
       toast.success('Driver verified successfully! 🛡️');
-      fetchDrivers();
+      refetch();
     } catch (err) {
-      const errMsg = err.data?.error || err.message || 'Failed to verify driver';
+      const errMsg = err.data?.error || err.data?.message || err.message || 'Failed to verify driver';
       setError(errMsg);
       toast.error(errMsg);
     }
@@ -115,23 +111,25 @@ export default function DriversManagement() {
     if (!window.confirm('Are you sure you want to delete this driver?')) return;
     try {
       setError('');
-      await userService.deleteDriver(id);
-      setDrivers(drivers.filter(d => d._id !== id));
+      await deleteDriver(id).unwrap();
       setSuccessMessage('Driver deleted successfully!');
       toast.success('Driver deleted successfully!');
+      refetch();
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || 'Failed to delete driver';
+      const errMsg = err.data?.error || err.data?.message || err.message || 'Failed to delete driver';
       setError(errMsg);
       toast.error(errMsg);
     }
   };
 
+  const displayError = error || queryErrorMsg;
+
   return (
     <AdminLayout title="Driver Fleet Management">
-      {error && (
+      {displayError && (
         <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6 flex justify-between items-center">
-          <span>{error}</span>
+          <span>{displayError}</span>
           <button onClick={() => setError('')} className="text-red-700 font-bold">&times;</button>
         </div>
       )}

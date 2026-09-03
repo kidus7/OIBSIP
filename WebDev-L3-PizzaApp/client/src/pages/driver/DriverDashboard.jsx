@@ -2,22 +2,27 @@ import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout, setCredentials } from '../../store/slices/authSlice';
 import {
   useGetOrdersQuery,
   useRespondToAssignmentMutation,
-  useVerifyDeliveryOTPMutation
+  useVerifyDeliveryOTPMutation,
+  useClaimOrderMutation
 } from '../../store/api/orderApi';
-import API from '../../services/api';
-import { useAuth } from '../../hooks/useAuth';
+import { useUpdateDriverStatusMutation } from '../../store/api/authApi';
 import NotificationBell from '../../components/NotificationBell';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function DriverDashboard() {
-  const { user, logout, updateUser } = useAuth();
+  const dispatch = useDispatch();
+  const { user, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const { data: ordersData, isLoading: loading, error: queryError, refetch } = useGetOrdersQuery('/orders/driver/available');
   const [respondToAssignment] = useRespondToAssignmentMutation();
   const [verifyDeliveryOTP] = useVerifyDeliveryOTPMutation();
+  const [updateDriverStatus] = useUpdateDriverStatusMutation();
+  const [claimOrder] = useClaimOrderMutation();
 
   const orders = ordersData?.data || ordersData || [];
   const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch driver deliveries') : '';
@@ -119,12 +124,10 @@ export default function DriverDashboard() {
 
   const handleToggleStatus = async (newStatus) => {
     try {
-      const res = await API.patch('/driver/status', { isOnline: newStatus });
-      const updated = res.data.data || res.data;
+      const res = await updateDriverStatus({ isOnline: newStatus }).unwrap();
+      const updated = res.data || res;
       setIsOnline(updated.isOnline);
-      if (updateUser) {
-        updateUser({ ...user, isOnline: updated.isOnline, status: updated.status, isActive: updated.isActive });
-      }
+      dispatch(setCredentials({ user: { ...user, isOnline: updated.isOnline, status: updated.status, isActive: updated.isActive }, token }));
       if (updated.isOnline) {
         toast.success('🟢 Online & Ready for Orders');
         refetch();
@@ -132,7 +135,7 @@ export default function DriverDashboard() {
         toast.success('🔴 Offline / On Break');
       }
     } catch (err) {
-      toast.error(err.response?.data?.error || err.message || 'Failed to update availability status');
+      toast.error(err.data?.error || err.message || 'Failed to update availability status');
     }
   };
 
@@ -143,14 +146,14 @@ export default function DriverDashboard() {
     }
     try {
       setSuccessMsg('');
-      const res = await API.put(`/orders/${orderId}/claim`);
+      await claimOrder(orderId).unwrap();
       refetch();
       toast.success(`Successfully accepted Order #${orderId.slice(-6)}! Out for delivery 🛵`);
       setSuccessMsg(`Successfully accepted Order #${orderId.slice(-6)}! Out for delivery 🛵`);
       setActiveTab('active');
       setTimeout(() => setSuccessMsg(''), 4000);
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || 'Failed to claim order';
+      const errMsg = err.data?.error || err.message || 'Failed to claim order';
       toast.error(errMsg);
     }
   };
@@ -266,7 +269,7 @@ export default function DriverDashboard() {
                   <button
                     onClick={() => {
                       setDropdownOpen(false);
-                      logout();
+                      dispatch(logout());
                     }}
                     className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors text-left cursor-pointer mt-1 border-t border-slate-100 dark:border-slate-800 pt-2.5"
                   >
@@ -293,7 +296,7 @@ export default function DriverDashboard() {
         </div>
         <div className="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end">
           <button
-            onClick={() => fetchDriverOrders()}
+            onClick={() => refetch()}
             className="bg-white text-orange-600 font-bold px-4 py-3 min-h-[48px] rounded-xl text-xs hover:bg-orange-50 transition shadow-sm cursor-pointer flex items-center justify-center w-full md:w-auto"
           >
             🔄 Refresh Orders

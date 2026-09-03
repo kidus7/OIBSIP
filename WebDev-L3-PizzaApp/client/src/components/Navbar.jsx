@@ -1,12 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../store/slices/authSlice';
 import { useCart } from '../hooks/useCart';
-import { useAuth } from '../hooks/useAuth';
 import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const { cart } = useCart();
-  const { user, logout, theme, setTheme } = useAuth();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const [theme, setThemeState] = useState(() => localStorage.getItem('theme') || 'light');
+  const setTheme = (newTheme) => {
+    setThemeState(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -250,7 +257,7 @@ export default function Navbar() {
                       <div className="border-t border-slate-100 my-2" />
                       <button
                         onClick={() => {
-                          logout();
+                          dispatch(logout());
                           setDropdownOpen(false);
                         }}
                         className="text-xs font-semibold text-red-600 hover:bg-red-50 w-full text-left px-3 py-2 rounded-xl transition-colors flex items-center gap-2"
@@ -417,7 +424,7 @@ export default function Navbar() {
                   </div>
                   <button
                     onClick={() => {
-                      logout();
+                      dispatch(logout());
                       setMobileMenuOpen(false);
                     }}
                     className="w-full text-center py-2.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2"

@@ -2,9 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useSelector } from 'react-redux';
-import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
-import { NotificationProvider } from './context/NotificationContext';
 
 // Components & Layout
 import Navbar from './components/Navbar';
@@ -142,12 +140,8 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <NotificationProvider>
-          <AppContent />
-        </NotificationProvider>
-      </CartProvider>
-    </AuthProvider>
+    <CartProvider>
+      <AppContent />
+    </CartProvider>
   );
 }

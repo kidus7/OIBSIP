@@ -94,6 +94,45 @@ export const orderApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Order'],
     }),
+    getMyOrders: builder.query({
+      query: () => '/orders/my-orders',
+      providesTags: ['Order'],
+    }),
+    getAllOrders: builder.query({
+      query: () => '/orders/admin/all',
+      providesTags: ['Order'],
+    }),
+    verifyPayment: builder.mutation({
+      query: (data) => ({
+        url: '/orders/verify-payment',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Order'],
+    }),
+    createRazorpayOrder: builder.mutation({
+      query: (data) => ({
+        url: '/orders/create-razorpay-order',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Order'],
+    }),
+    updateOrderETA: builder.mutation({
+      query: ({ id, ...etaData }) => ({
+        url: `/orders/${id}/eta`,
+        method: 'PUT',
+        body: etaData,
+      }),
+      invalidatesTags: ['Order'],
+    }),
+    claimOrder: builder.mutation({
+      query: (id) => ({
+        url: `/orders/${id}/claim`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['Order'],
+    }),
   }),
 });
 
@@ -104,4 +143,10 @@ export const {
   useAssignDriverMutation,
   useRespondToAssignmentMutation,
   useVerifyDeliveryOTPMutation,
+  useGetMyOrdersQuery,
+  useGetAllOrdersQuery,
+  useVerifyPaymentMutation,
+  useCreateRazorpayOrderMutation,
+  useUpdateOrderETAMutation,
+  useClaimOrderMutation,
 } = orderApi;

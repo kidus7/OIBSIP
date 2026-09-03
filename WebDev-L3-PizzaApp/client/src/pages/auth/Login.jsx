@@ -1,35 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authService } from '../../services/authService';
-import { useAuth } from '../../hooks/useAuth';
+import { useDispatch } from 'react-redux';
+import { useLoginMutation } from '../../store/api/authApi';
+import { setCredentials } from '../../store/slices/authSlice';
 import { Mail, Lock, Eye, EyeOff, Pizza, ArrowRight, ShieldCheck, Truck } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  const { login } = useAuth();
+  const [loginMutation, { isLoading: loading }] = useLoginMutation();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
     setMessage('');
 
     try {
-      const data = await authService.login({ email, password });
+      const data = await loginMutation({ email, password }).unwrap();
 
-      login(data.user, data.token);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('role', data.user.role);
+      dispatch(setCredentials({ user: data.user, token: data.token }));
 
       setMessage('Login successful! Redirecting...');
+      toast.success('Login successful!');
       setTimeout(() => {
         if (data.user.role === 'driver') {
           navigate('/driver/dashboard');
@@ -40,8 +39,9 @@ export default function Login() {
         }
       }, 800);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Invalid email or password');
-      setLoading(false);
+      const errMsg = err.data?.error || err.data?.message || err.message || 'Invalid email or password';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authService } from '../../services/authService';
-import { useAuth } from '../../hooks/useAuth';
+import { useDispatch } from 'react-redux';
+import { useAdminLoginMutation } from '../../store/api/authApi';
+import { setCredentials } from '../../store/slices/authSlice';
 import { Mail, Lock, Eye, EyeOff, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -9,33 +10,28 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  const { login } = useAuth();
+  const [adminLoginMutation, { isLoading: loading }] = useAdminLoginMutation();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
     setMessage('');
 
     try {
-      const data = await authService.adminLogin({ email, password });
+      const data = await adminLoginMutation({ email, password }).unwrap();
       
       if (data.user.role !== 'admin') {
         setError('Access denied. Administrator privileges required.');
         toast.error('Access denied. Administrator privileges required.');
-        setLoading(false);
         return;
       }
 
-      login(data.user, data.token);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('role', data.user.role);
+      dispatch(setCredentials({ user: data.user, token: data.token }));
 
       setMessage('Admin login successful! Redirecting...');
       toast.success('Admin login successful!');
@@ -43,10 +39,9 @@ export default function AdminLogin() {
         navigate('/admin/dashboard');
       }, 1000);
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || 'Invalid admin credentials';
+      const errMsg = err.data?.error || err.data?.message || err.message || 'Invalid admin credentials';
       setError(errMsg);
       toast.error(errMsg);
-      setLoading(false);
     }
   };
 

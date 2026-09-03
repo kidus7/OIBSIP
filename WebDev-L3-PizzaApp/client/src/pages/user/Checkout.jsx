@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../hooks/useCart';
-import { useAuth } from '../../hooks/useAuth';
-import { useCreateOrderMutation } from '../../store/api/orderApi';
-import API from '../../services/api';
+import { useCreateOrderMutation, useVerifyPaymentMutation } from '../../store/api/orderApi';
 
 export default function Checkout() {
   const { cart, getCartTotal, clearCart } = useCart();
-  const { user: reqUser } = useAuth();
   const [createOrder] = useCreateOrderMutation();
+  const [verifyPayment] = useVerifyPaymentMutation();
   const navigate = useNavigate();
 
   const [street, setStreet] = useState('');
@@ -80,7 +78,7 @@ export default function Checkout() {
         order_id: data.id,
         handler: async (response) => {
           try {
-            const verifyRes = await API.post('/orders/verify-payment', {
+            const verifyRes = await verifyPayment({
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
               signature: response.razorpay_signature,
@@ -88,10 +86,10 @@ export default function Checkout() {
               deliveryAddress: deliveryAddress,
               cartItems: cart,
               subtotal: grandTotal
-            });
-            if (verifyRes.data.message === 'Payment verified successfully') {
+            }).unwrap();
+            if (verifyRes.message === 'Payment verified successfully') {
               clearCart();
-              const targetId = verifyRes.data.order?._id || verifyRes.data.order?.id || res.orderId || data.id;
+              const targetId = verifyRes.order?._id || verifyRes.order?.id || res.orderId || data.id;
               navigate(`/order-tracking/${targetId}`);
             }
           } catch (err) {
@@ -111,7 +109,7 @@ export default function Checkout() {
       rzp.open();
     } catch (err) {
       console.error('Checkout error:', err);
-      setError(err.data?.error || err.data?.message || err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to complete checkout process.');
+      setError(err.data?.error || err.data?.message || err.message || 'Failed to complete checkout process.');
       setLoading(false);
     }
   };

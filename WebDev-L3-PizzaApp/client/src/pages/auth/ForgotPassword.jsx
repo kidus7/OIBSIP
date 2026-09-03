@@ -1,27 +1,30 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { authService } from '../../services/authService';
+import { useForgotPasswordMutation } from '../../store/api/authApi';
 import { Mail, ArrowRight, KeyRound } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
+  const [forgotPasswordMutation, { isLoading: loading }] = useForgotPasswordMutation();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
     setMessage('');
 
     try {
-      await authService.forgotPassword(email);
-      setMessage('Password reset link sent to your email. Please check your inbox.');
-      setLoading(false);
+      const data = await forgotPasswordMutation(email).unwrap();
+      const msg = data.message || 'Password reset link sent to your email. Please check your inbox.';
+      setMessage(msg);
+      toast.success(msg);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to send password reset email');
-      setLoading(false);
+      const errMsg = err.data?.error || err.data?.message || err.message || 'Failed to send password reset email';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 

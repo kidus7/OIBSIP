@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authService } from '../../services/authService';
-import { useAuth } from '../../hooks/useAuth';
+import { useDispatch } from 'react-redux';
+import { useAdminRegisterMutation } from '../../store/api/authApi';
+import { setCredentials } from '../../store/slices/authSlice';
 import { User, Mail, Lock, Key, Eye, EyeOff, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -12,33 +13,28 @@ export default function AdminRegister() {
   const [adminSecret, setAdminSecret] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  const { login } = useAuth();
+  const [adminRegisterMutation, { isLoading: loading }] = useAdminRegisterMutation();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
     setMessage('');
 
     try {
-      const data = await authService.adminRegister({ name, email, password, adminSecret });
+      const data = await adminRegisterMutation({ name, email, password, adminSecret }).unwrap();
 
       if (data.user.role !== 'admin') {
         setError('Access denied. Administrator privileges required.');
         toast.error('Access denied. Administrator privileges required.');
-        setLoading(false);
         return;
       }
 
-      login(data.user, data.token);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('role', data.user.role);
+      dispatch(setCredentials({ user: data.user, token: data.token }));
 
       setMessage('Admin registration successful! Redirecting...');
       toast.success('Admin registration successful!');
@@ -46,10 +42,9 @@ export default function AdminRegister() {
         navigate('/admin/dashboard');
       }, 1000);
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.message || 'Admin registration failed';
+      const errMsg = err.data?.error || err.data?.message || err.message || 'Admin registration failed';
       setError(errMsg);
       toast.error(errMsg);
-      setLoading(false);
     }
   };
 

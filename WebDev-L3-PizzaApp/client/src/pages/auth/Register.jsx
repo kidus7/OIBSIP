@@ -1,35 +1,37 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authService } from '../../services/authService';
+import { useRegisterMutation } from '../../store/api/authApi';
 import { Mail, Lock, User, Eye, EyeOff, Pizza, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
+  const [registerMutation, { isLoading: loading }] = useRegisterMutation();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
     setMessage('');
 
     try {
-      const data = await authService.register({ name, email, password });
-      setMessage(data.data || 'Registration successful! Please login to your account.');
-      setLoading(false);
+      const data = await registerMutation({ name, email, password }).unwrap();
+      const msg = data.data || data.message || 'Registration successful! Please login to your account.';
+      setMessage(msg);
+      toast.success(msg);
       setTimeout(() => {
         navigate('/login');
       }, 3000);
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Registration failed');
-      setLoading(false);
+      const errMsg = err.data?.error || err.data?.message || err.message || 'Registration failed';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 

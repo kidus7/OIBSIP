@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { userService } from '../services/userService';
+import { useSelector, useDispatch } from 'react-redux';
+import { useUpdateProfileMutation } from '../store/api/authApi';
+import { setCredentials } from '../store/slices/authSlice';
 import toast from 'react-hot-toast';
 import { User, Mail, Phone, Car, Lock, Shield, Settings, Save, CheckCircle2 } from 'lucide-react';
 
 export default function Profile() {
-  const { user, updateUser } = useAuth();
+  const dispatch = useDispatch();
+  const { user, token } = useSelector((state) => state.auth);
+  const [updateProfileMutation, { isLoading: loading }] = useUpdateProfileMutation();
 
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -17,8 +20,6 @@ export default function Profile() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,8 +33,6 @@ export default function Profile() {
       toast.error('New password must be at least 6 characters');
       return;
     }
-
-    setLoading(true);
 
     try {
       const payload = {
@@ -49,18 +48,15 @@ export default function Profile() {
         newPassword: newPassword || undefined
       };
 
-      const response = await userService.updateProfile(payload);
-      updateUser(response.data);
+      const response = await updateProfileMutation(payload).unwrap();
+      dispatch(setCredentials({ user: response.data, token }));
       toast.success('Profile updated successfully!');
       
-      // Clear password fields
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err) {
-      toast.error(err.response?.data?.error || err.message || 'Failed to update profile');
-    } finally {
-      setLoading(false);
+      toast.error(err.data?.error || err.data?.message || err.message || 'Failed to update profile');
     }
   };
 

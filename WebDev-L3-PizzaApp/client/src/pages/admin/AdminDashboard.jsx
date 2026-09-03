@@ -1,43 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
-import { orderService } from '../../services/orderService';
-import { inventoryService } from '../../services/inventoryService';
-import { userService } from '../../services/userService';
+import { useGetAllOrdersQuery } from '../../store/api/orderApi';
+import { useGetInventoryQuery } from '../../store/api/inventoryApi';
+import { useGetDriversQuery } from '../../store/api/authApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function AdminDashboard() {
-  const [orders, setOrders] = useState([]);
-  const [inventory, setInventory] = useState([]);
-  const [drivers, setDrivers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: ordersData, isLoading: ordersLoading, error: ordersError } = useGetAllOrdersQuery();
+  const { data: inventoryData, isLoading: inventoryLoading, error: inventoryError } = useGetInventoryQuery();
+  const { data: driversData, isLoading: driversLoading, error: driversError } = useGetDriversQuery();
+
+  const loading = ordersLoading || inventoryLoading || driversLoading;
+  const queryError = ordersError || inventoryError || driversError;
+  const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch dashboard metrics') : '';
   const [successMessage, setSuccessMessage] = useState('');
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const [ordersRes, inventoryRes, driversRes] = await Promise.all([
-        orderService.getAllOrders(),
-        inventoryService.getInventory(),
-        userService.getDrivers()
-      ]);
-
-      setOrders(ordersRes.data || []);
-      setInventory(inventoryRes.data || []);
-      setDrivers(driversRes.data || []);
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to fetch dashboard metrics');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const orders = ordersData?.data || ordersData || [];
+  const inventory = inventoryData?.data || inventoryData || [];
+  const drivers = driversData?.data || driversData || [];
 
   // Calculate Metrics
   const totalRevenue = orders
@@ -59,7 +42,7 @@ export default function AdminDashboard() {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-6 flex justify-between items-center shadow-xs">
           <span>{error}</span>
-          <button onClick={() => setError('')} className="text-red-700 font-bold hover:text-red-900 cursor-pointer">&times;</button>
+          <button onClick={() => {}} className="text-red-700 font-bold hover:text-red-900 cursor-pointer">&times;</button>
         </div>
       )}
 
