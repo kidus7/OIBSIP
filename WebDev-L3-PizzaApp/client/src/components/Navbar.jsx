@@ -315,7 +315,7 @@ export default function Navbar() {
 
         {/* Mobile Open Menu Panel */}
         {mobileMenuOpen && (
-          <div className="lg:hidden w-full bg-white/95 backdrop-blur-md border border-slate-100 shadow-xl px-5 py-4 space-y-4 rounded-3xl mt-2 animate-fadeIn">
+          <div className="lg:hidden w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-100 shadow-xl px-5 py-4 space-y-4 rounded-3xl mt-2 animate-fadeIn">
             {/* 1. Mobile Search Pill at top */}
             <form onSubmit={handleSearch} className="relative w-full">
               <input
@@ -323,9 +323,9 @@ export default function Navbar() {
                 placeholder="Search pizzas, ingredients..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 bg-slate-100 rounded-full text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-full text-xs placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
-              <svg className="absolute left-3 top-3 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="absolute left-3 top-3 w-3.5 h-3.5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </form>
@@ -335,36 +335,36 @@ export default function Navbar() {
               <Link
                 to="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block w-full px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors bg-slate-50/50 border border-slate-100"
+                className="block w-full px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-orange-500 dark:hover:text-orange-400 transition-colors bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800"
               >
                 Home
               </Link>
               <a
                 href="/dashboard#menu"
                 onClick={handleMenuClick}
-                className="block w-full px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors bg-slate-50/50 border border-slate-100 cursor-pointer"
+                className="block w-full px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-orange-500 dark:hover:text-orange-400 transition-colors bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 cursor-pointer"
               >
                 Menu
               </a>
               <Link
                 to="/custom-builder"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between w-full px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors bg-slate-50/50 border border-slate-100"
+                className="flex items-center justify-between w-full px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-orange-500 dark:hover:text-orange-400 transition-colors bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800"
               >
                 <span>Custom Builder 🍕</span>
-                <span className="bg-red-100 text-red-600 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">Hot</span>
+                <span className="bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full">Hot</span>
               </Link>
               <Link
                 to="/orders"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block w-full px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors bg-slate-50/50 border border-slate-100"
+                className="block w-full px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-orange-500 dark:hover:text-orange-400 transition-colors bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800"
               >
                 My Orders
               </Link>
               <Link
                 to="/profile"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block w-full px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors bg-slate-50/50 border border-slate-100"
+                className="block w-full px-4 py-3 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-orange-500 dark:hover:text-orange-400 transition-colors bg-slate-50/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800"
               >
                 Profile Settings
               </Link>
@@ -372,7 +372,7 @@ export default function Navbar() {
                 <Link
                   to="/admin/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block w-full px-4 py-3 rounded-2xl text-sm font-bold text-amber-700 bg-amber-50 border border-amber-100"
+                  className="block w-full px-4 py-3 rounded-2xl text-sm font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/50"
                 >
                   Admin Dashboard
                 </Link>
@@ -400,17 +400,17 @@ export default function Navbar() {
                 />
               </div>
             </button>
-            <div className="pt-2 border-t border-slate-100">
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
               {user ? (
-                <div className="flex flex-col space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex flex-col space-y-3 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full bg-linear-to-tr from-slate-900 to-slate-800 text-white font-extrabold text-xs flex items-center justify-center shadow-sm">
                       {getInitials(user.name)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
-                      <p className="text-xs text-slate-400 truncate">{user.email}</p>
-                      <span className="text-[10px] font-bold uppercase bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full inline-block mt-0.5">
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{user.name}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-400 truncate">{user.email}</p>
+                      <span className="text-[10px] font-bold uppercase bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full inline-block mt-0.5">
                         {user.role || 'Customer'}
                       </span>
                     </div>
@@ -420,7 +420,7 @@ export default function Navbar() {
                       logout();
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full text-center py-2.5 bg-red-100 text-red-600 rounded-xl text-xs font-bold hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
+                    className="w-full text-center py-2.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2"
                   >
                     <span>🚪</span> Sign Out
                   </button>
@@ -430,7 +430,7 @@ export default function Navbar() {
                   <Link
                     to="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full text-center py-3 rounded-xl text-xs font-bold border border-slate-200 text-slate-700 hover:bg-slate-50"
+                    className="w-full text-center py-3 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
                   >
                     Login
                   </Link>

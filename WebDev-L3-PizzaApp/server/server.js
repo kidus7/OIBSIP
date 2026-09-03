@@ -4,7 +4,7 @@ const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
-const errorHandler = require('./middleware/errorHandler');
+const errorHandler = require('./middleware/errorMiddleware');
 const { initStockChecker } = require('./utils/stockChecker');
 
 // Load env vars
