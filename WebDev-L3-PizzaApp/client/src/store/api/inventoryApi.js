@@ -3,12 +3,12 @@ import { baseApi } from './baseApi';
 export const inventoryApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getInventory: builder.query({
-      query: () => '/admin/inventory',
+      query: () => '/inventory',
       providesTags: ['Inventory'],
     }),
     updateStock: builder.mutation({
       query: ({ id, stock }) => ({
-        url: `/admin/inventory/${id}`,
+        url: `/inventory/${id}`,
         method: 'PATCH',
         body: { stock },
       }),
@@ -16,7 +16,7 @@ export const inventoryApi = baseApi.injectEndpoints({
     }),
     updateItem: builder.mutation({
       query: ({ id, ...patch }) => ({
-        url: `/admin/inventory/${id}`,
+        url: `/inventory/${id}`,
         method: 'PUT',
         body: patch,
       }),
@@ -24,7 +24,7 @@ export const inventoryApi = baseApi.injectEndpoints({
     }),
     addIngredient: builder.mutation({
       query: (data) => ({
-        url: '/admin/inventory',
+        url: '/inventory',
         method: 'POST',
         body: data,
       }),
@@ -32,7 +32,7 @@ export const inventoryApi = baseApi.injectEndpoints({
     }),
     deleteItem: builder.mutation({
       query: (id) => ({
-        url: `/admin/inventory/${id}`,
+        url: `/inventory/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Inventory'],
