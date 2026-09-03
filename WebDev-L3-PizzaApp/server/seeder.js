@@ -141,7 +141,7 @@ const seedData = async () => {
     await User.findOneAndUpdate(
       { email: 'driver@pizza.com' },
       {
-        name: 'Mignot Driver',
+        name: 'Driver User',
         email: 'driver@pizza.com',
         password: defaultPassword,
         phone: '+251912345678',
