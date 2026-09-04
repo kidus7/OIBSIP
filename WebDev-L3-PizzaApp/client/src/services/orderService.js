@@ -18,11 +18,11 @@ export const orderService = {
     return response.data;
   },
   updateOrderStatus: async (id, status) => {
-    const response = await API.put(`/orders/${id}/status`, { status });
+    const response = await API.patch(`/orders/${id}/status`, { status });
     return response.data;
   },
   updateOrderETA: async (id, etaData) => {
-    const response = await API.put(`/orders/${id}/eta`, etaData);
+    const response = await API.patch(`/orders/${id}/eta`, etaData);
     return response.data;
   }
 };

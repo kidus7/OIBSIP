@@ -64,7 +64,7 @@ export const orderApi = baseApi.injectEndpoints({
     }),
     updateOrderStatus: builder.mutation({
       query: ({ id, status }) => ({
-        url: `/admin/orders/${id}/status`,
+        url: `/orders/${id}/status`,
         method: 'PATCH',
         body: { status },
       }),
@@ -72,7 +72,7 @@ export const orderApi = baseApi.injectEndpoints({
     }),
     assignDriver: builder.mutation({
       query: ({ id, driverId }) => ({
-        url: `/admin/orders/${id}/assign`,
+        url: `/orders/${id}/assign-driver`,
         method: 'PATCH',
         body: { driverId },
       }),
@@ -80,7 +80,7 @@ export const orderApi = baseApi.injectEndpoints({
     }),
     respondToAssignment: builder.mutation({
       query: ({ id, accept }) => ({
-        url: `/driver/orders/${id}/respond-assignment`,
+        url: `/driver/orders/${id}/assignment-response`,
         method: 'PATCH',
         body: { accept },
       }),
@@ -121,7 +121,7 @@ export const orderApi = baseApi.injectEndpoints({
     updateOrderETA: builder.mutation({
       query: ({ id, ...etaData }) => ({
         url: `/orders/${id}/eta`,
-        method: 'PUT',
+        method: 'PATCH',
         body: etaData,
       }),
       invalidatesTags: ['Order'],
