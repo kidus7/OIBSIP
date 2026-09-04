@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import AdminLayout from '../../components/AdminLayout';
-import { useGetOrdersQuery, useUpdateOrderStatusMutation, useAssignDriverMutation } from '../../store/api/orderApi';
+import {
+  useGetOrdersQuery,
+  useUpdateOrderStatusMutation,
+  useAssignDriverMutation,
+  useClaimApprovalMutation,
+  useUpdateOrderETAMutation
+} from '../../store/api/orderApi';
 import API from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
@@ -15,6 +21,8 @@ export default function IncomingOrders() {
   const { data: ordersData, isLoading: loading, error: queryError, refetch } = useGetOrdersQuery();
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
   const [assignDriverMutation] = useAssignDriverMutation();
+  const [claimApprovalMutation] = useClaimApprovalMutation();
+  const [updateOrderETAMutation] = useUpdateOrderETAMutation();
 
   const orders = ordersData?.data || ordersData || [];
   const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch incoming orders') : '';
@@ -72,7 +80,7 @@ export default function IncomingOrders() {
 
   const handleClaimApproval = async (orderId, approved, driverId) => {
     try {
-      await API.patch(`/admin/orders/${orderId}/claim-approval`, { approved, driverId });
+      await claimApprovalMutation({ orderId, approved, driverId }).unwrap();
       setIncomingClaim(null);
       refetch();
       setSuccessMessage(`Driver claim ${approved ? 'approved & dispatched 🚀' : 'declined ❌'} successfully!`);
@@ -84,7 +92,7 @@ export default function IncomingOrders() {
 
   const handleAssignDriverSubmit = async (orderId, driverId) => {
     try {
-      await assignDriverMutation({ id: orderId, driverId }).unwrap();
+      await assignDriverMutation({ orderId, driverId }).unwrap();
       setAssignModalOrder(null);
       refetch();
       setSuccessMessage(`Driver assigned successfully!`);
@@ -100,7 +108,7 @@ export default function IncomingOrders() {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await updateOrderStatus({ id: orderId, status: newStatus }).unwrap();
+      await updateOrderStatus({ orderId, status: newStatus }).unwrap();
       setSuccessMessage(`Order status updated to ${newStatus} successfully!`);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
@@ -110,7 +118,7 @@ export default function IncomingOrders() {
 
   const handleUpdateETA = async (orderId, minutes) => {
     try {
-      await API.put(`/orders/${orderId}/eta`, { estimatedMinutes: minutes });
+      await updateOrderETAMutation({ orderId, estimatedMinutes: minutes }).unwrap();
       refetch();
       setSuccessMessage(`Order ETA updated successfully!`);
       setTimeout(() => setSuccessMessage(''), 3000);
@@ -179,7 +187,7 @@ export default function IncomingOrders() {
       {error && (
         <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 p-4 rounded-xl mb-6 flex justify-between items-center shadow-sm">
           <span>{error}</span>
-          <button onClick={() => setError('')} className="text-red-700 dark:text-red-300 font-bold">&times;</button>
+          <button onClick={() => setSuccessMessage('')} className="text-red-700 dark:text-red-300 font-bold">&times;</button>
         </div>
       )}
 

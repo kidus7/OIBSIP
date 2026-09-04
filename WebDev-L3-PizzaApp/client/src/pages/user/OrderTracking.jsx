@@ -1,18 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useGetOrdersQuery } from '../../store/api/orderApi';
+import { io } from 'socket.io-client';
+import { useGetOrderByIdQuery } from '../../store/api/orderApi';
 import MyOrders from './MyOrders';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function OrderTracking() {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const { data: orderData, isLoading: loading, error: queryError } = useGetOrdersQuery(orderId ? `/orders/${orderId}` : '', {
+  const { data: orderData, isLoading: loading, error: queryError, refetch } = useGetOrderByIdQuery(orderId, {
     skip: !orderId
   });
   const order = orderData?.data || orderData;
   const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch order details') : '';
   const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes default in seconds
+
+  useEffect(() => {
+    if (!orderId) return;
+
+    const socketUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SOCKET_URL) || 'http://localhost:4000';
+    const socket = io(socketUrl);
+
+    socket.on('connect', () => {
+      socket.emit('join_role', 'client');
+      socket.emit('join_order', orderId);
+    });
+
+    socket.on('order_updated', (updated) => {
+      if (updated && (updated._id === orderId || updated.orderId === orderId)) {
+        refetch();
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [orderId, refetch]);
 
   useEffect(() => {
     if (!order) return;
@@ -88,8 +111,8 @@ export default function OrderTracking() {
           <p className="font-bold text-lg mb-2">Error Loading Order</p>
           <p>{error}</p>
           <button
-            onClick={() => fetchOrderDetails()}
-            className="mt-4 bg-red-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-red-700"
+            onClick={() => refetch()}
+            className="mt-4 bg-red-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-red-700 cursor-pointer"
           >
             Try Again
           </button>
@@ -101,7 +124,7 @@ export default function OrderTracking() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-8 space-y-6 min-h-screen overflow-x-hidden">
       {/* Header & Estimated Time Banner */}
-      <div className="bg-linear-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-6 md:p-8 shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
+      <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-6 md:p-8 shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
           <div className="flex items-center space-x-3">
             <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">

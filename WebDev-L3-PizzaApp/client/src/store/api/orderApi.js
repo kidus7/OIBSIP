@@ -63,35 +63,79 @@ export const orderApi = baseApi.injectEndpoints({
       invalidatesTags: ['Order'],
     }),
     updateOrderStatus: builder.mutation({
-      query: ({ id, status }) => ({
-        url: `/orders/${id}/status`,
-        method: 'PATCH',
-        body: { status },
-      }),
+      query: ({ orderId, id, status }) => {
+        const targetId = orderId || id;
+        return {
+          url: `/orders/${targetId}/status`,
+          method: 'PATCH',
+          body: { status },
+        };
+      },
       invalidatesTags: ['Order'],
     }),
     assignDriver: builder.mutation({
-      query: ({ id, driverId }) => ({
-        url: `/orders/${id}/assign-driver`,
-        method: 'PATCH',
-        body: { driverId },
-      }),
+      query: ({ orderId, id, driverId }) => {
+        const targetId = orderId || id;
+        return {
+          url: `/orders/${targetId}/assign-driver`,
+          method: 'PATCH',
+          body: { driverId },
+        };
+      },
       invalidatesTags: ['Order', 'Driver'],
     }),
     respondToAssignment: builder.mutation({
-      query: ({ id, accept }) => ({
-        url: `/driver/orders/${id}/assignment-response`,
-        method: 'PATCH',
-        body: { accept },
-      }),
+      query: ({ orderId, id, accept }) => {
+        const targetId = orderId || id;
+        return {
+          url: `/driver/orders/${targetId}/assignment-response`,
+          method: 'PATCH',
+          body: { accept },
+        };
+      },
       invalidatesTags: ['Order'],
     }),
-    verifyDeliveryOTP: builder.mutation({
-      query: ({ id, deliveryCode }) => ({
-        url: `/driver/orders/${id}/verify`,
-        method: 'PUT',
-        body: { deliveryCode },
-      }),
+    claimApproval: builder.mutation({
+      query: ({ orderId, id, approved, driverId }) => {
+        const targetId = orderId || id;
+        return {
+          url: `/orders/${targetId}/claim-approval`,
+          method: 'PATCH',
+          body: { approved, driverId },
+        };
+      },
+      invalidatesTags: ['Order'],
+    }),
+    claimOrder: builder.mutation({
+      query: (orderId) => {
+        const targetId = typeof orderId === 'object' ? (orderId.orderId || orderId.id) : orderId;
+        return {
+          url: `/orders/${targetId}/claim`,
+          method: 'PATCH',
+        };
+      },
+      invalidatesTags: ['Order'],
+    }),
+    completeOrder: builder.mutation({
+      query: ({ orderId, id, deliveryCode }) => {
+        const targetId = orderId || id;
+        return {
+          url: `/orders/${targetId}/complete`,
+          method: 'PATCH',
+          body: { deliveryCode },
+        };
+      },
+      invalidatesTags: ['Order'],
+    }),
+    updateOrderETA: builder.mutation({
+      query: ({ orderId, id, ...etaData }) => {
+        const targetId = orderId || id;
+        return {
+          url: `/orders/${targetId}/eta`,
+          method: 'PATCH',
+          body: etaData,
+        };
+      },
       invalidatesTags: ['Order'],
     }),
     getMyOrders: builder.query({
@@ -99,7 +143,11 @@ export const orderApi = baseApi.injectEndpoints({
       providesTags: ['Order'],
     }),
     getAllOrders: builder.query({
-      query: () => '/orders/admin/all',
+      query: () => '/orders',
+      providesTags: ['Order'],
+    }),
+    getOrderById: builder.query({
+      query: (id) => `/orders/${id}`,
       providesTags: ['Order'],
     }),
     verifyPayment: builder.mutation({
@@ -107,29 +155,6 @@ export const orderApi = baseApi.injectEndpoints({
         url: '/orders/verify-payment',
         method: 'POST',
         body: data,
-      }),
-      invalidatesTags: ['Order'],
-    }),
-    createRazorpayOrder: builder.mutation({
-      query: (data) => ({
-        url: '/orders/create-razorpay-order',
-        method: 'POST',
-        body: data,
-      }),
-      invalidatesTags: ['Order'],
-    }),
-    updateOrderETA: builder.mutation({
-      query: ({ id, ...etaData }) => ({
-        url: `/orders/${id}/eta`,
-        method: 'PATCH',
-        body: etaData,
-      }),
-      invalidatesTags: ['Order'],
-    }),
-    claimOrder: builder.mutation({
-      query: (id) => ({
-        url: `/orders/${id}/claim`,
-        method: 'PUT',
       }),
       invalidatesTags: ['Order'],
     }),
@@ -142,11 +167,12 @@ export const {
   useUpdateOrderStatusMutation,
   useAssignDriverMutation,
   useRespondToAssignmentMutation,
-  useVerifyDeliveryOTPMutation,
+  useClaimApprovalMutation,
+  useClaimOrderMutation,
+  useCompleteOrderMutation,
+  useUpdateOrderETAMutation,
   useGetMyOrdersQuery,
   useGetAllOrdersQuery,
+  useGetOrderByIdQuery,
   useVerifyPaymentMutation,
-  useCreateRazorpayOrderMutation,
-  useUpdateOrderETAMutation,
-  useClaimOrderMutation,
 } = orderApi;

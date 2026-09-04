@@ -7,7 +7,7 @@ import { logout, setCredentials } from '../../store/slices/authSlice';
 import {
   useGetOrdersQuery,
   useRespondToAssignmentMutation,
-  useVerifyDeliveryOTPMutation,
+  useCompleteOrderMutation,
   useClaimOrderMutation
 } from '../../store/api/orderApi';
 import { useUpdateDriverStatusMutation } from '../../store/api/authApi';
@@ -20,9 +20,9 @@ export default function DriverDashboard() {
   const navigate = useNavigate();
   const { data: ordersData, isLoading: loading, error: queryError, refetch } = useGetOrdersQuery('/orders/driver/available');
   const [respondToAssignment] = useRespondToAssignmentMutation();
-  const [verifyDeliveryOTP] = useVerifyDeliveryOTPMutation();
+  const [completeOrderMutation] = useCompleteOrderMutation();
   const [updateDriverStatus] = useUpdateDriverStatusMutation();
-  const [claimOrder] = useClaimOrderMutation();
+  const [claimOrderMutation] = useClaimOrderMutation();
 
   const orders = ordersData?.data || ordersData || [];
   const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch driver deliveries') : '';
@@ -146,7 +146,7 @@ export default function DriverDashboard() {
     }
     try {
       setSuccessMsg('');
-      await claimOrder(orderId).unwrap();
+      await claimOrderMutation(orderId).unwrap();
       refetch();
       toast.success(`Successfully accepted Order #${orderId.slice(-6)}! Out for delivery 🛵`);
       setSuccessMsg(`Successfully accepted Order #${orderId.slice(-6)}! Out for delivery 🛵`);
@@ -161,7 +161,7 @@ export default function DriverDashboard() {
   const handleCompleteOrderWithCode = async (orderId) => {
     try {
       setSuccessMsg('');
-      await verifyDeliveryOTP({ id: orderId, deliveryCode: inputCode }).unwrap();
+      await completeOrderMutation({ orderId, deliveryCode: inputCode }).unwrap();
       toast.success(`Order #${orderId.slice(-6)} marked as Delivered! 🎉`);
       setSuccessMsg(`Order #${orderId.slice(-6)} marked as Delivered! 🎉`);
       setCompletingOrderId(null);
@@ -307,7 +307,7 @@ export default function DriverDashboard() {
       {error && (
         <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 p-4 rounded-xl text-sm flex justify-between items-center shadow-sm">
           <span>{error}</span>
-          <button onClick={() => setError('')} className="font-bold min-h-[48px] px-3 flex items-center">&times;</button>
+          <button onClick={() => {}} className="font-bold min-h-[48px] px-3 flex items-center">&times;</button>
         </div>
       )}
 
@@ -499,7 +499,7 @@ export default function DriverDashboard() {
                         </div>
                       ) : (
                         <button
-                          onClick={() => { setCompletingOrderId(order._id); setInputCode(''); setError(''); }}
+                          onClick={() => { setCompletingOrderId(order._id); setInputCode(''); }}
                           className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 min-h-[48px] rounded-xl text-lg uppercase tracking-wider transition shadow-lg shadow-emerald-600/30 flex items-center justify-center space-x-2 cursor-pointer"
                         >
                           <span>Verify & Deliver</span>

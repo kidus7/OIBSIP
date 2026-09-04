@@ -1,7 +1,6 @@
 const express = require('express');
 const {
   createOrder,
-  createRazorpayOrder,
   verifyPayment,
   getMyOrders,
   getAllOrders,
@@ -24,21 +23,17 @@ router.route('/')
   .get(protect, admin, getAllOrders)
   .post(protect, createOrder);
 
-router.post('/create-razorpay-order', protect, createRazorpayOrder);
 router.post('/verify-payment', protect, verifyPayment);
 router.get('/my-orders', protect, getMyOrders);
-router.get('/admin/all', protect, admin, getAllOrders);
 router.get('/driver/available', protect, getDriverAvailableOrders);
-router.put('/:id/claim', protect, claimOrder);
-router.put('/:id/complete', protect, completeOrder);
-router.put('/driver/orders/:id/verify', protect, completeOrder);
-router.put('/:id/verify', protect, completeOrder);
-router.get('/:id', protect, getOrderById);
+
 router.patch('/:id/status', protect, admin, updateOrderStatus);
 router.patch('/:id/eta', protect, admin, updateOrderETA);
+router.patch('/:id/claim', protect, claimOrder);
 router.patch('/:id/claim-approval', protect, admin, claimApproval);
-router.put('/:id/claim-approval', protect, admin, claimApproval);
 router.patch('/:id/assign-driver', protect, admin, assignDriver);
-router.put('/:id/assign-driver', protect, admin, assignDriver);
+router.patch('/:id/complete', protect, completeOrder);
+
+router.get('/:id', protect, getOrderById);
 
 module.exports = router;
