@@ -240,35 +240,45 @@ exports.verifyPayment = async (req, res, next) => {
     const isVerified = (finalSignature === expectedSign) || (finalSignature === 'verified_signature') || (finalSignature === 'fallback_signature') || (process.env.NODE_ENV === 'development' && finalSignature);
 
     if (isVerified) {
-      const mappedItems = await processOrderItems(finalCartItems, true);
-      const newOrder = await Order.create({
-        user: req.user._id || req.user.id,
-        pizzas: mappedItems.length > 0 ? mappedItems : finalCartItems,
-        totalPrice: finalSubtotal,
-        totalAmount: finalSubtotal,
-        deliveryCode: generateDeliveryCode(),
-        deliveryAddress: finalAddress,
-        estimatedDeliveryTime: new Date(Date.now() + 30 * 60 * 1000),
-        paymentInfo: {
-          status: 'Completed',
-          razorpayOrderId: finalOrderId,
-          razorpayPaymentId: finalPaymentId,
-          razorpaySignature: finalSignature
-        },
-        status: 'Order Received'
-      });
+      let order = await Order.findOne({ 'paymentInfo.razorpayOrderId': finalOrderId });
+
+      if (order) {
+        order.paymentInfo.status = 'Completed';
+        order.paymentInfo.razorpayPaymentId = finalPaymentId;
+        order.paymentInfo.razorpaySignature = finalSignature;
+        order.status = 'Order Received';
+        if (Object.keys(finalAddress).length > 0) order.deliveryAddress = finalAddress;
+        await order.save();
+      } else {
+        // Fallback if no pre-created order exists
+        const mappedItems = await processOrderItems(finalCartItems, true);
+        order = await Order.create({
+          user: req.user._id || req.user.id,
+          pizzas: mappedItems.length > 0 ? mappedItems : finalCartItems,
+          totalPrice: finalSubtotal,
+          deliveryCode: generateDeliveryCode(),
+          deliveryAddress: finalAddress,
+          paymentInfo: {
+            status: 'Completed',
+            razorpayOrderId: finalOrderId,
+            razorpayPaymentId: finalPaymentId,
+            razorpaySignature: finalSignature
+          },
+          status: 'Order Received'
+        });
+      }
 
       checkLowStock();
 
       const io = req.app.get('io');
       if (io) {
-        io.to(`order_${newOrder._id}`).emit('order_updated', newOrder);
-        io.emit('order_updated', newOrder);
+        io.to(`order_${order._id}`).emit('order_updated', order);
+        io.emit('order_updated', order);
       }
 
       return res.status(200).json({
         message: 'Payment verified successfully',
-        order: newOrder
+        order: order
       });
     } else {
       return res.status(400).json({ message: 'Invalid signature sent' });
