@@ -10,6 +10,7 @@ import {
 } from '../../store/api/orderApi';
 import API from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import toast from 'react-hot-toast';
 
 const ChevronDown = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -28,7 +29,6 @@ export default function IncomingOrders() {
   const orders = ordersData?.data || ordersData || [];
   const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch incoming orders') : '';
 
-  const [successMessage, setSuccessMessage] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedRows, setExpandedRows] = useState({});
@@ -88,8 +88,7 @@ export default function IncomingOrders() {
       await claimApprovalMutation({ orderId, approved, driverId }).unwrap();
       setIncomingClaim(null);
       refetch();
-      setSuccessMessage(`Driver claim ${approved ? 'approved & dispatched 🚀' : 'declined ❌'} successfully!`);
-      setTimeout(() => setSuccessMessage(''), 3000);
+      toast.success('Driver claim ' + (approved ? 'approved' : 'declined'));
     } catch (err) {
       console.error('Failed to process claim approval', err);
     }
@@ -100,8 +99,7 @@ export default function IncomingOrders() {
       await assignDriverMutation({ orderId, driverId }).unwrap();
       setAssignModalOrder(null);
       refetch();
-      setSuccessMessage(`Driver assigned successfully!`);
-      setTimeout(() => setSuccessMessage(''), 3000);
+      toast.success('Driver assigned successfully!');
     } catch (err) {
       console.error('Failed to assign driver', err);
     }
@@ -114,8 +112,7 @@ export default function IncomingOrders() {
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       await updateOrderStatus({ orderId, status: newStatus }).unwrap();
-      setSuccessMessage(`Order status updated to ${newStatus} successfully!`);
-      setTimeout(() => setSuccessMessage(''), 3000);
+      toast.success('Order status updated to ' + newStatus);
     } catch (err) {
       console.error('Failed to update order status', err);
     }
@@ -125,8 +122,7 @@ export default function IncomingOrders() {
     try {
       await updateOrderETAMutation({ orderId, estimatedMinutes: minutes }).unwrap();
       refetch();
-      setSuccessMessage(`Order ETA updated successfully!`);
-      setTimeout(() => setSuccessMessage(''), 3000);
+      toast.success('Order ETA updated successfully!');
     } catch (err) {
       console.error('Failed to update order ETA', err);
     }
@@ -192,14 +188,6 @@ export default function IncomingOrders() {
       {error && (
         <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 p-4 rounded-xl mb-6 flex justify-between items-center shadow-sm">
           <span>{error}</span>
-          <button onClick={() => setSuccessMessage('')} className="text-red-700 dark:text-red-300 font-bold">&times;</button>
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 p-4 rounded-xl mb-6 flex justify-between items-center shadow-sm">
-          <span>{successMessage}</span>
-          <button onClick={() => setSuccessMessage('')} className="text-emerald-700 dark:text-emerald-300 font-bold">&times;</button>
         </div>
       )}
 
