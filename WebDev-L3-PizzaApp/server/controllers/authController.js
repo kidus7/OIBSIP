@@ -155,7 +155,9 @@ exports.forgotPassword = async (req, res, next) => {
       token: resetToken
     });
 
-    const message = `You are receiving this because you (or someone else) have requested the reset of a password. Please click on the following link: http://${req.headers.host}/api/v1/auth/reset-password/${user._id}/${resetToken}`;
+    const clientUrl = process.env.CLIENT_URL || req.headers.origin || 'http://localhost:3000';
+    const resetUrl = `${clientUrl}/reset-password/${user._id}/${resetToken}`;
+    const message = `You are receiving this because you (or someone else) have requested the reset of a password. Please click on the following link to reset your password:\n\n${resetUrl}`;
 
     await sendEmail({
       email: user.email,
