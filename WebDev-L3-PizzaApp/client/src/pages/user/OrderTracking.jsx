@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { io } from 'socket.io-client';
 import { useGetOrderByIdQuery } from '../../store/api/orderApi';
 import MyOrders from './MyOrders';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -14,28 +13,6 @@ export default function OrderTracking() {
   const order = orderData?.data || orderData;
   const error = queryError ? (queryError.data?.error || queryError.message || 'Failed to fetch order details') : '';
   const [timeLeft, setTimeLeft] = useState(1800); // 30 minutes default in seconds
-
-  useEffect(() => {
-    if (!orderId) return;
-
-    const socketUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SOCKET_URL) || 'http://localhost:4000';
-    const socket = io(socketUrl);
-
-    socket.on('connect', () => {
-      socket.emit('join_role', 'client');
-      socket.emit('join_order', orderId);
-    });
-
-    socket.on('order_updated', (updated) => {
-      if (updated && (updated._id === orderId || updated.orderId === orderId)) {
-        refetch();
-      }
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [orderId, refetch]);
 
   useEffect(() => {
     if (!order) return;

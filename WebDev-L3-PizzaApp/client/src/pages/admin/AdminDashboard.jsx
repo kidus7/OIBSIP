@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
 import AdminLayout from '../../components/AdminLayout';
 import { useGetAllOrdersQuery } from '../../store/api/orderApi';
 import { useGetInventoryQuery } from '../../store/api/inventoryApi';
@@ -8,17 +7,6 @@ import { useGetDriversQuery } from '../../store/api/authApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function AdminDashboard() {
-  useEffect(() => {
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:4000';
-    const socket = io(socketUrl);
-    socket.on('connect', () => {
-      socket.emit('join_role', 'admin');
-    });
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
-
   const { data: ordersData, isLoading: ordersLoading, error: ordersError } = useGetAllOrdersQuery();
   const { data: inventoryData, isLoading: inventoryLoading, error: inventoryError } = useGetInventoryQuery();
   const { data: driversData, isLoading: driversLoading, error: driversError } = useGetDriversQuery();

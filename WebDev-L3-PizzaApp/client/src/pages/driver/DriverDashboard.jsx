@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout, setCredentials } from '../../store/slices/authSlice';
+import { useSocket } from '../../hooks/useSocket';
 import {
   useGetOrdersQuery,
   useRespondToAssignmentMutation,
@@ -15,6 +15,7 @@ import NotificationBell from '../../components/NotificationBell';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function DriverDashboard() {
+  const socket = useSocket();
   const dispatch = useDispatch();
   const { user, token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
@@ -45,35 +46,32 @@ export default function DriverDashboard() {
   }, [user]);
 
   useEffect(() => {
-    // Socket.io real-time synchronization
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:4000';
-    const socket = io(socketUrl);
+    if (!socket) return;
 
-    socket.on('connect', () => {
-      socket.emit('join_role', 'driver');
-      if (user?._id) {
-        socket.emit('join_driver', user._id);
-      }
-    });
-
-    socket.on('order_updated', () => {
+    const handleOrderUpdated = () => {
       refetch();
-    });
+    };
 
-    socket.on('order:claim_resolved', (data) => {
+    const handleClaimResolved = (data) => {
       refetch();
       toast.success(data.approved ? '🎉 Your order claim was approved by Admin!' : '❌ Your order claim was declined.');
-    });
+    };
 
-    socket.on('order:direct_assignment', (data) => {
+    const handleDirectAssignment = (data) => {
       setDirectAssignmentModalData(data);
       refetch();
-    });
+    };
+
+    socket.on('order_updated', handleOrderUpdated);
+    socket.on('order:claim_resolved', handleClaimResolved);
+    socket.on('order:direct_assignment', handleDirectAssignment);
 
     return () => {
-      socket.disconnect();
+      socket.off('order_updated', handleOrderUpdated);
+      socket.off('order:claim_resolved', handleClaimResolved);
+      socket.off('order:direct_assignment', handleDirectAssignment);
     };
-  }, [user]);
+  }, [socket, refetch]);
 
   const handleAcceptDirectAssignment = async (orderId) => {
     try {

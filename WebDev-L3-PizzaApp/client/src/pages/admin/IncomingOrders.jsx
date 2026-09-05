@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { io } from 'socket.io-client';
 import AdminLayout from '../../components/AdminLayout';
+import { useSocket } from '../../hooks/useSocket';
 import {
   useGetOrdersQuery,
   useUpdateOrderStatusMutation,
@@ -18,6 +18,7 @@ const ChevronDown = ({ className }) => (
 );
 
 export default function IncomingOrders() {
+  const socket = useSocket();
   const { data: ordersData, isLoading: loading, error: queryError, refetch } = useGetOrdersQuery();
   const [updateOrderStatus] = useUpdateOrderStatusMutation();
   const [assignDriverMutation] = useAssignDriverMutation();
@@ -37,36 +38,40 @@ export default function IncomingOrders() {
 
   useEffect(() => {
     fetchOnlineDrivers();
+  }, []);
 
-    // Socket.io real-time synchronization
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:4000';
-    const socket = io(socketUrl);
+  useEffect(() => {
+    if (!socket) return;
 
-    socket.on('connect', () => {
-      socket.emit('join_role', 'admin');
-    });
-
-    socket.on('order_updated', () => {
+    const handleOrderUpdated = () => {
       refetch();
-    });
+    };
 
-    socket.on('admin:claim_notification', (data) => {
+    const handleClaimNotification = (data) => {
       setIncomingClaim(data);
-    });
+    };
 
-    socket.on('order:claim_requested', (data) => {
+    const handleClaimRequested = (data) => {
       setIncomingClaim(data);
-    });
+    };
 
-    socket.on('order:claim_resolved', () => {
+    const handleClaimResolved = () => {
       setIncomingClaim(null);
       refetch();
-    });
+    };
+
+    socket.on('order_updated', handleOrderUpdated);
+    socket.on('admin:claim_notification', handleClaimNotification);
+    socket.on('order:claim_requested', handleClaimRequested);
+    socket.on('order:claim_resolved', handleClaimResolved);
 
     return () => {
-      socket.disconnect();
+      socket.off('order_updated', handleOrderUpdated);
+      socket.off('admin:claim_notification', handleClaimNotification);
+      socket.off('order:claim_requested', handleClaimRequested);
+      socket.off('order:claim_resolved', handleClaimResolved);
     };
-  }, []);
+  }, [socket, refetch]);
 
   const fetchOnlineDrivers = async () => {
     try {
