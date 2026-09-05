@@ -3,6 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useGetInventoryQuery } from '../../store/api/inventoryApi';
 import { useCart } from '../../hooks/useCart';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { formatPrice } from '../../utils/formatCurrency';
 
 export default function PizzaBuilder() {
   const [step, setStep] = useState(1); // 1: Base, 2: Sauce, 3: Cheese, 4: Veggies
@@ -289,7 +290,7 @@ export default function PizzaBuilder() {
                               </div>
                             </div>
                             <span className="font-black text-orange-600 dark:text-orange-400 text-sm sm:text-base">
-                              +${(item.price || 0).toFixed(2)}
+                              +{formatPrice(item.price || 0)}
                             </span>
                           </div>
                         );
@@ -349,7 +350,7 @@ export default function PizzaBuilder() {
                               </div>
                             </div>
                             <span className="font-black text-orange-600 dark:text-orange-400 text-sm sm:text-base">
-                              +${(item.price || 0).toFixed(2)}
+                              +{formatPrice(item.price || 0)}
                             </span>
                           </div>
                         );
@@ -409,7 +410,7 @@ export default function PizzaBuilder() {
                               </div>
                             </div>
                             <span className="font-black text-orange-600 dark:text-orange-400 text-sm sm:text-base">
-                              +${(item.price || 0).toFixed(2)}
+                              +{formatPrice(item.price || 0)}
                             </span>
                           </div>
                         );
@@ -469,7 +470,7 @@ export default function PizzaBuilder() {
                               </div>
                             </div>
                             <span className="font-black text-orange-600 dark:text-orange-400 text-sm sm:text-base">
-                              +${(item.price || 0).toFixed(2)}
+                              +{formatPrice(item.price || 0)}
                             </span>
                           </div>
                         );
@@ -544,7 +545,7 @@ export default function PizzaBuilder() {
               <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">1. Base (Crust):</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200">
-                  {selectedBase ? `${selectedBase.name} (+$${selectedBase.price.toFixed(2)})` : <span className="text-slate-400 dark:text-slate-600 italic">Not selected</span>}
+                  {selectedBase ? `${selectedBase.name} (+${formatPrice(selectedBase.price)})` : <span className="text-slate-400 dark:text-slate-600 italic">Not selected</span>}
                 </span>
               </div>
 
@@ -552,7 +553,7 @@ export default function PizzaBuilder() {
               <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">2. Sauce:</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200">
-                  {selectedSauce ? `${selectedSauce.name} (+$${selectedSauce.price.toFixed(2)})` : <span className="text-slate-400 dark:text-slate-600 italic">Not selected</span>}
+                  {selectedSauce ? `${selectedSauce.name} (+${formatPrice(selectedSauce.price)})` : <span className="text-slate-400 dark:text-slate-600 italic">Not selected</span>}
                 </span>
               </div>
 
@@ -560,7 +561,7 @@ export default function PizzaBuilder() {
               <div className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-800">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">3. Cheese:</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200">
-                  {selectedCheese ? `${selectedCheese.name} (+$${selectedCheese.price.toFixed(2)})` : <span className="text-slate-400 dark:text-slate-600 italic">Not selected</span>}
+                  {selectedCheese ? `${selectedCheese.name} (+${formatPrice(selectedCheese.price)})` : <span className="text-slate-400 dark:text-slate-600 italic">Not selected</span>}
                 </span>
               </div>
 
@@ -570,7 +571,7 @@ export default function PizzaBuilder() {
                   <span className="text-slate-500 dark:text-slate-400 font-medium">4. Veggies ({selectedVeggies.length}):</span>
                   {selectedVeggies.length > 0 && (
                     <span className="font-bold text-orange-600 dark:text-orange-400">
-                      +${selectedVeggies.reduce((s, v) => s + (v.price || 0), 0).toFixed(2)}
+                      +{formatPrice(selectedVeggies.reduce((s, v) => s + (v.price || 0), 0))}
                     </span>
                   )}
                 </div>
@@ -584,7 +585,7 @@ export default function PizzaBuilder() {
                         className="bg-orange-50 dark:bg-orange-950/40 text-orange-800 dark:text-orange-300 text-[10px] font-bold px-2 py-1 rounded-lg border border-orange-200 dark:border-orange-900/50 flex items-center gap-1"
                       >
                         <span>{v.name}</span>
-                        <span className="text-orange-600 dark:text-orange-400 font-extrabold">+${(v.price || 0).toFixed(2)}</span>
+                        <span className="text-orange-600 dark:text-orange-400 font-extrabold">+{formatPrice(v.price || 0)}</span>
                       </span>
                     ))}
                   </div>
@@ -597,7 +598,7 @@ export default function PizzaBuilder() {
             <div className="bg-linear-to-r from-orange-500/10 to-red-500/10 dark:from-orange-950/30 dark:to-red-950/30 p-4 rounded-2xl border border-orange-200 dark:border-orange-900/50 flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide block">Total Price</span>
-                <span className="text-2xl font-black text-slate-900 dark:text-white">${totalPrice.toFixed(2)}</span>
+                <span className="text-2xl font-black text-slate-900 dark:text-white">{formatPrice(totalPrice)}</span>
               </div>
               <div className="text-right">
                 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-full">

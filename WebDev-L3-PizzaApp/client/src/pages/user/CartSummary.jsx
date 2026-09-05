@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../hooks/useCart';
+import { formatPrice } from '../../utils/formatCurrency';
 
 export default function CartSummary() {
   const { cart, updateQuantity, removeFromCart, clearCart, getCartTotal } = useCart();
@@ -121,7 +122,7 @@ export default function CartSummary() {
                       )}
 
                       <div className="text-sm font-black text-orange-600 dark:text-orange-400 pt-1">
-                        ${itemPrice.toFixed(2)} each
+                        {formatPrice(itemPrice)} each
                       </div>
                     </div>
                   </div>
@@ -148,7 +149,7 @@ export default function CartSummary() {
 
                     <div className="flex items-center gap-4">
                       <span className="text-base font-black text-slate-900 dark:text-white">
-                        ${(itemPrice * itemQty).toFixed(2)}
+                        {formatPrice(itemPrice * itemQty)}
                       </span>
                       <button
                         onClick={() => removeFromCart(itemId)}
@@ -174,19 +175,19 @@ export default function CartSummary() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>Subtotal ({cart.reduce((s, i) => s + (i.quantity || 1), 0)} items)</span>
-                <span className="font-bold text-slate-900 dark:text-white">${subtotal.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-white">{formatPrice(subtotal)}</span>
               </div>
               <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>Delivery Fee</span>
-                <span className="font-bold text-slate-900 dark:text-white">${deliveryFee.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-white">{formatPrice(deliveryFee)}</span>
               </div>
               <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>GST / Tax (5%)</span>
-                <span className="font-bold text-slate-900 dark:text-white">${tax.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-white">{formatPrice(tax)}</span>
               </div>
               <div className="border-t border-slate-100 dark:border-slate-800 pt-3 flex justify-between text-base font-black text-slate-900 dark:text-white">
                 <span>Grand Total</span>
-                <span className="text-orange-600 dark:text-orange-400">${grandTotal.toFixed(2)}</span>
+                <span className="text-orange-600 dark:text-orange-400">{formatPrice(grandTotal)}</span>
               </div>
             </div>
 
@@ -216,7 +217,7 @@ export default function CartSummary() {
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 z-50 lg:hidden flex items-center justify-between gap-4 shadow-2xl">
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Amount</span>
-              <span className="text-xl font-black text-orange-400">${grandTotal.toFixed(2)}</span>
+              <span className="text-xl font-black text-orange-400">{formatPrice(grandTotal)}</span>
             </div>
             <button
               onClick={() => navigate('/checkout')}

@@ -4,6 +4,7 @@ import { useGetOrdersQuery } from '../../store/api/orderApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { useCart } from '../../hooks/useCart';
 import toast from 'react-hot-toast';
+import { formatPrice } from '../../utils/formatCurrency';
 
 export default function MyOrders() {
   const { data: ordersData, isLoading: loading, error: queryError } = useGetOrdersQuery('/orders/my-orders');
@@ -106,7 +107,7 @@ export default function MyOrders() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-lg font-extrabold text-orange-400 font-mono">₹{order.totalPrice}</span>
+                    <span className="text-lg font-extrabold text-orange-400 font-mono">{formatPrice(order.totalPrice)}</span>
                   </div>
                 </div>
 
@@ -130,7 +131,7 @@ export default function MyOrders() {
                             </div>
                           </div>
                           <div className="font-bold text-slate-800 dark:text-slate-200">
-                            ₹{pizza.price}
+                            {formatPrice(pizza.price)}
                           </div>
                         </div>
                       ))}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../../hooks/useCart';
 import { useCreateOrderMutation, useVerifyPaymentMutation } from '../../store/api/orderApi';
+import { formatPrice } from '../../utils/formatCurrency';
 
 export default function Checkout() {
   const { cart, getCartTotal, clearCart } = useCart();
@@ -216,14 +217,14 @@ export default function Checkout() {
                   loading ? 'opacity-70 cursor-wait' : ''
                 }`}
               >
-                <span>{loading ? 'Processing Payment...' : `Pay ₹${(grandTotal * 80).toFixed(0)} / $${grandTotal.toFixed(2)} & Place Order 🚀`}</span>
+                <span>{loading ? 'Processing Payment...' : `Pay ${formatPrice(grandTotal)} & Place Order 🚀`}</span>
               </button>
 
               {/* Sticky Mobile Checkout Bar */}
               <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 z-50 sm:hidden flex items-center justify-between gap-4 shadow-2xl">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Amount</span>
-                  <span className="text-xl font-black text-orange-400">${grandTotal.toFixed(2)}</span>
+                  <span className="text-xl font-black text-orange-400">{formatPrice(grandTotal)}</span>
                 </div>
                 <button
                   type="submit"
@@ -251,7 +252,7 @@ export default function Checkout() {
                     <span className="text-slate-400">Qty: {item.quantity || 1}</span>
                   </div>
                   <span className="font-black text-orange-600 dark:text-orange-400 shrink-0">
-                    ${((item.price || item.totalPrice || 0) * (item.quantity || 1)).toFixed(2)}
+                    {formatPrice((item.price || item.totalPrice || 0) * (item.quantity || 1))}
                   </span>
                 </div>
               ))}
@@ -260,19 +261,19 @@ export default function Checkout() {
             <div className="space-y-2 text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
               <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>Subtotal</span>
-                <span className="font-bold text-slate-900 dark:text-white">${subtotal.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-white">{formatPrice(subtotal)}</span>
               </div>
               <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>Delivery Fee</span>
-                <span className="font-bold text-slate-900 dark:text-white">${deliveryFee.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-white">{formatPrice(deliveryFee)}</span>
               </div>
               <div className="flex justify-between text-slate-600 dark:text-slate-400">
                 <span>Tax / GST (5%)</span>
-                <span className="font-bold text-slate-900 dark:text-white">${tax.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-white">{formatPrice(tax)}</span>
               </div>
               <div className="border-t border-slate-100 dark:border-slate-800 pt-2 flex justify-between text-sm font-black text-slate-900 dark:text-white">
                 <span>Total Amount</span>
-                <span className="text-orange-600 dark:text-orange-400">${grandTotal.toFixed(2)}</span>
+                <span className="text-orange-600 dark:text-orange-400">{formatPrice(grandTotal)}</span>
               </div>
             </div>
 

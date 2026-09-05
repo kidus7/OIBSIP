@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useGetOrderByIdQuery } from '../../store/api/orderApi';
 import MyOrders from './MyOrders';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { formatPrice } from '../../utils/formatCurrency';
 
 export default function OrderTracking() {
   const { orderId } = useParams();
@@ -263,7 +264,7 @@ export default function OrderTracking() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-sm font-extrabold text-slate-800">₹{pizza.price}</span>
+                  <span className="text-sm font-extrabold text-slate-800">{formatPrice(pizza.price)}</span>
                 </div>
               </div>
             ))}
@@ -271,7 +272,7 @@ export default function OrderTracking() {
 
           <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
             <span className="font-bold text-slate-700">Total Price:</span>
-            <span className="text-xl font-extrabold text-red-600 font-mono">₹{order?.totalPrice}</span>
+            <span className="text-xl font-extrabold text-red-600 font-mono">{formatPrice(order?.totalPrice)}</span>
           </div>
         </div>
       </div>

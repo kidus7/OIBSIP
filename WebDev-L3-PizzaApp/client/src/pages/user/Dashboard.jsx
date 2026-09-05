@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useGetInventoryQuery } from '../../store/api/inventoryApi';
 import { useCart } from '../../hooks/useCart';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { formatPrice } from '../../utils/formatCurrency';
 
 export default function Dashboard() {
   const { data: inventoryData, isLoading: loading } = useGetInventoryQuery();
@@ -373,7 +374,7 @@ export default function Dashboard() {
                           {pizza.name}
                         </h3>
                         <span className="font-black text-lg text-orange-600 dark:text-orange-400 whitespace-nowrap">
-                          ${(pizza.price || 0).toFixed(2)}
+                          {formatPrice(pizza.price)}
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-3 mt-2 leading-relaxed font-medium">

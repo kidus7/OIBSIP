@@ -5,6 +5,7 @@ import { useGetAllOrdersQuery } from '../../store/api/orderApi';
 import { useGetInventoryQuery } from '../../store/api/inventoryApi';
 import { useGetDriversQuery } from '../../store/api/authApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import { formatPrice } from '../../utils/formatCurrency';
 
 export default function AdminDashboard() {
   const { data: ordersData, isLoading: ordersLoading, error: ordersError } = useGetAllOrdersQuery();
@@ -57,14 +58,13 @@ export default function AdminDashboard() {
         <LoadingSpinner fullScreen={false} message="Fetching latest SaaS metrics..." />
       ) : (
         <div className="space-y-8 pb-12">
-          {/* Row 1: Top Metric KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* Total Revenue */}
             <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Revenue</p>
-                  <h3 className="text-2xl lg:text-3xl font-extrabold text-slate-900 mt-2">₹{totalRevenue.toLocaleString()}</h3>
+                  <h3 className="text-2xl lg:text-3xl font-extrabold text-slate-900 mt-2">{formatPrice(totalRevenue)}</h3>
                 </div>
                 <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-xl shadow-inner shadow-emerald-200">
                   💰
@@ -255,9 +255,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Row 3: Quick Analytics & Recent Activity (2-column layout: 2 cols left, 1 col right) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column (2 cols): Recent Incoming Orders mini-table */}
             <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-6">
@@ -307,7 +305,7 @@ export default function AdminDashboard() {
                               {order.orderItems?.length || 1} item(s)
                             </td>
                             <td className="p-3.5 font-bold text-slate-900">
-                              ₹{order.totalPrice || 0}
+                              {formatPrice(order.totalPrice || 0)}
                             </td>
                             <td className="p-3.5">
                               <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold uppercase ${
@@ -335,7 +333,6 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Low stock mini warning section inside left column if any */}
               {lowStockAlerts.length > 0 && (
                 <div className="mt-6 pt-6 border-t border-slate-100">
                   <div className="flex items-center justify-between bg-red-50 p-4 rounded-xl border border-red-200">
@@ -357,7 +354,6 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* Right Column (1 col): System Health & Quick Actions panel */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between space-y-6">
               <div>
                 <div className="flex items-center space-x-3 mb-6">

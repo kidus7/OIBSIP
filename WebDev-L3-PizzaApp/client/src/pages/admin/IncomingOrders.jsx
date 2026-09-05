@@ -11,6 +11,7 @@ import {
 import API from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
+import { formatPrice } from '../../utils/formatCurrency';
 
 const ChevronDown = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -304,7 +305,7 @@ export default function IncomingOrders() {
 
                       {/* Total Price */}
                       <td className="py-3 px-3 align-top font-mono font-extrabold text-slate-900 dark:text-white whitespace-nowrap">
-                        ₹{Number(order.totalAmount || order.totalPrice || 0).toFixed(2)}
+                        {formatPrice(order.totalAmount || order.totalPrice || 0)}
                       </td>
 
                       {/* Payment Status */}
@@ -507,7 +508,7 @@ export default function IncomingOrders() {
 
               <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-4 rounded-2xl space-y-2">
                 <h4 className="font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Order #{incomingClaim.orderDetails?._id?.slice(-6)}</h4>
-                <p><strong>Total Amount:</strong> ₹{incomingClaim.orderDetails?.totalPrice || incomingClaim.orderDetails?.totalAmount}</p>
+                <p><strong>Total Amount:</strong> {formatPrice(incomingClaim.orderDetails?.totalPrice || incomingClaim.orderDetails?.totalAmount)}</p>
                 <p><strong>Destination:</strong> {incomingClaim.orderDetails?.deliveryAddress?.street || incomingClaim.orderDetails?.deliveryAddress?.address}, {incomingClaim.orderDetails?.deliveryAddress?.city}</p>
                 <div>
                   <strong className="block mb-1 text-slate-900 dark:text-white">Items Breakdown:</strong>
@@ -515,7 +516,7 @@ export default function IncomingOrders() {
                     {incomingClaim.orderDetails?.pizzas?.map((p, i) => (
                       <div key={i} className="bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center text-slate-800 dark:text-slate-200">
                         <span>{p.name || 'Pizza'} (x{p.quantity || 1})</span>
-                        <span className="font-mono font-bold">₹{p.price}</span>
+                        <span className="font-mono font-bold">{formatPrice(p.price)}</span>
                       </div>
                     ))}
                   </div>
