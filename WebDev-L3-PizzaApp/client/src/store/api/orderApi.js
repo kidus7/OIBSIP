@@ -45,6 +45,10 @@ export const orderApi = baseApi.injectEndpoints({
           socket.on('order:created', handleOrderUpdate);
           socket.on('order_updated', handleOrderUpdate);
           socket.on('order:ready_for_delivery', handleOrderUpdate);
+          socket.on('order:delivered', handleOrderUpdate);
+          socket.on('order:claim_resolved', handleOrderUpdate);
+          socket.on('order:assignment_resolved', handleOrderUpdate);
+          socket.on('order:direct_assignment', handleOrderUpdate);
 
         } catch {
           // no-op if cache entry removed before loaded

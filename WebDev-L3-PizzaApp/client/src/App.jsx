@@ -12,6 +12,7 @@ import AdminRoute from './components/AdminRoute';
 import DriverRoute from './components/DriverRoute';
 import InstallPWA from './components/InstallPWA';
 import LoadingSpinner from './components/LoadingSpinner';
+import NotificationListener from './components/common/NotificationListener';
 
 // Public Pages
 import Login from './pages/auth/Login';
@@ -85,6 +86,7 @@ function AppLayout() {
   return (
     <div className="app-container overflow-x-hidden" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+      <NotificationListener />
       
       {!hideHeaderFooter && <Navbar />}
 
