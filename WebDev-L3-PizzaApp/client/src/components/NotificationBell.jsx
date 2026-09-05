@@ -4,6 +4,7 @@ import { markAllAsRead } from '../store/slices/notificationSlice';
 import {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
+  useMarkAllNotificationsReadMutation,
   useClearNotificationsMutation
 } from '../store/api/notificationApi';
 
@@ -12,6 +13,7 @@ export default function NotificationBell() {
   const notifications = notificationsData || [];
   const unreadCount = notifications.filter(n => !n.read).length;
   const [markNotificationRead] = useMarkNotificationReadMutation();
+  const [markAllNotificationsRead] = useMarkAllNotificationsReadMutation();
   const [clearNotifications] = useClearNotificationsMutation();
   const dispatch = useDispatch();
 
@@ -97,7 +99,7 @@ export default function NotificationBell() {
             <div className="flex items-center space-x-2">
               {unreadCount > 0 && (
                 <button
-                  onClick={() => dispatch(markAllAsRead())}
+                  onClick={() => markAllNotificationsRead()}
                   className="text-[11px] bg-white/20 hover:bg-white/30 text-white px-2 py-1 rounded-lg transition font-medium cursor-pointer"
                 >
                   Mark all read

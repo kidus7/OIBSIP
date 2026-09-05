@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi';
-import { markAsRead, clearAllNotifications } from '../slices/notificationSlice';
+import { markAsRead, markAllAsRead, clearAllNotifications } from '../slices/notificationSlice';
 
 export const notificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -17,6 +17,13 @@ export const notificationApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ['Notification'],
     }),
+    markAllNotificationsRead: builder.mutation({
+      queryFn: async (_, { dispatch }) => {
+        dispatch(markAllAsRead());
+        return { data: { success: true } };
+      },
+      invalidatesTags: ['Notification'],
+    }),
     clearNotifications: builder.mutation({
       queryFn: async (_, { dispatch }) => {
         dispatch(clearAllNotifications());
@@ -30,5 +37,6 @@ export const notificationApi = baseApi.injectEndpoints({
 export const {
   useGetNotificationsQuery,
   useMarkNotificationReadMutation,
+  useMarkAllNotificationsReadMutation,
   useClearNotificationsMutation,
 } = notificationApi;

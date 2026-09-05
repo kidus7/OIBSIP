@@ -149,7 +149,7 @@ exports.createOrder = async (req, res, next) => {
     checkLowStock();
 
     const io = req.app.get('io');
-    if (io) {
+    if (io && order.paymentInfo?.status && order.paymentInfo.status !== 'Pending') {
       io.to(`order_${order._id}`).emit('order_updated', order);
       io.emit('order_updated', order);
     }

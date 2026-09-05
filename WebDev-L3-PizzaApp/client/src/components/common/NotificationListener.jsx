@@ -40,6 +40,14 @@ export default function NotificationListener() {
       const order = payload?.orderDetails || payload?.order || payload;
       if (!order) return;
 
+      const paymentStatus = order.paymentInfo?.status;
+      if (paymentStatus && paymentStatus.toLowerCase() === 'pending') {
+        return;
+      }
+      if (paymentStatus && !['completed', 'paid'].includes(paymentStatus.toLowerCase())) {
+        return;
+      }
+
       const status = order.status;
       const orderIdStr = order._id || order.orderId || 'xxxxxx';
       const shortId = typeof orderIdStr === 'string' ? orderIdStr.slice(-6) : 'xxxxxx';

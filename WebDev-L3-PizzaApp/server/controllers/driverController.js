@@ -119,7 +119,7 @@ exports.assignmentResponse = async (req, res, next) => {
     } else {
       order.pendingDriverId = null;
       order.claimStatus = 'none';
-      order.status = 'Sent for Delivery';
+      order.status = 'Sent to Delivery';
       order.driver = null;
     }
 
